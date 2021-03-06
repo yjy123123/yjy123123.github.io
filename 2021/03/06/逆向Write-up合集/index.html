@@ -29,7 +29,7 @@
 <meta property="og:locale" content="en_US">
 <meta property="og:image" content="https://yjy123123.github.io/2021/03/06/%E9%80%86%E5%90%91Write-up%E5%90%88%E9%9B%86/2021/03/06/%E9%80%86%E5%90%91Write-up%E5%90%88%E9%9B%86/reverse-1.png">
 <meta property="article:published_time" content="2021-03-06T07:06:06.000Z">
-<meta property="article:modified_time" content="2021-03-06T07:22:06.177Z">
+<meta property="article:modified_time" content="2021-03-06T07:37:51.238Z">
 <meta property="article:author" content="yjy123">
 <meta property="article:tag" content="逆向">
 <meta name="twitter:card" content="summary">
@@ -177,7 +177,7 @@
               <span class="post-meta-item-text">Posted on</span>
               
 
-              <time title="Created: 2021-03-06 15:06:06 / Modified: 15:22:06" itemprop="dateCreated datePublished" datetime="2021-03-06T15:06:06+08:00">2021-03-06</time>
+              <time title="Created: 2021-03-06 15:06:06 / Modified: 15:37:51" itemprop="dateCreated datePublished" datetime="2021-03-06T15:06:06+08:00">2021-03-06</time>
             </span>
 
           
@@ -213,19 +213,17 @@
     <div class="post-body" itemprop="articleBody">
 
       
-        <p>##XCTF攻防世界<br>###open_source</p>
-<p>这道题直接给了源码，读就行了，一开始以为文件名是32位hash，但是计算的话太大，也无法解密，所以突破口还是hash本身的计算，从之前的判断可以推出，其实(second % 17)就是等于8。</p>
+        <h2 id="XCTF攻防世界"><a href="#XCTF攻防世界" class="headerlink" title="XCTF攻防世界"></a>XCTF攻防世界</h2><h3 id="open-source"><a href="#open-source" class="headerlink" title="open_source"></a>open_source</h3><p>这道题直接给了源码，读就行了，一开始以为文件名是32位hash，但是计算的话太大，也无法解密，所以突破口还是hash本身的计算，从之前的判断可以推出，其实(second % 17)就是等于8。</p>
 <p>算出来还要转为16进制。</p>
-<p>###logmein</p>
-<p>也是考的阅读c的能力，拖到ida里面F5反编译，简单读一下，突破口应该在判断语句里面。</p>
+<h3 id="logmein"><a href="#logmein" class="headerlink" title="logmein"></a>logmein</h3><p>也是考的阅读c的能力，拖到ida里面F5反编译，简单读一下，突破口应该在判断语句里面。</p>
 <p><img src="./2021/03/06/%E9%80%86%E5%90%91Write-up%E5%90%88%E9%9B%86/reverse-1.png"></p>
-<p>处理之后提示数太大了，乍看一眼*(_BYTE *)不太理解什么意思，但是感觉long整数和字符串长度差不多，可以合理推测，可能需要对long型的数据一个字节一个字节的处理。</p>
-<p>结果是我看错了，括号其实对应错了，(*((_BYTE *)&amp;v7 + i % v6)，(_BYTE *)&amp;v7是一个整体，实现的功能也是从long中依次取一个字节的数。</p>
+<p>处理之后提示数太大了，乍看一眼**<em>(_BYTE <em>)</em></em>不太理解什么意思，但是感觉long整数和字符串长度差不多，可以合理推测，可能需要对long型的数据一个字节一个字节的处理。</p>
+<p>结果是我看错了，括号其实对应错了，*<em>(</em>((_BYTE <em>)&amp;v7 + i % v6)<strong>，</strong>(_BYTE <em>)&amp;v7</em></em>是一个整体，实现的功能也是从long中依次取一个字节的数。</p>
 <p>首先要知道long在机器中是如何存储的，才知道怎么取出，在汇编中，一般是小端存储，所以按地址取数是从低位开始往高位取，一个字节可以存储两个16进制数，所以一次取两个数，这也解释i % 7 的原因。</p>
-<p>最开始想用模运算取数，还停留在10进制中，但是python实现16进制模运算有一个坑就是，会把%识别成格式化的符号，所以这了采用x&gt;&gt;(8^i)&amp;0xFF来取数据。</p>
+<p>最开始想用模运算取数，还停留在10进制中，但是python实现16进制模运算有一个坑就是，会把%识别成格式化的符号，所以这了采用<code>x&gt;&gt;(8^i)&amp;0xFF</code>来取数据。</p>
 <p>最后16进制结果要转为ascii码。</p>
 <p>这道题花了一点时间，我用python处理进制的转换非常的不熟悉，真的头大。</p>
-<p><a target="_blank" rel="noopener" href="https://reverseengineering.stackexchange.com/questions/13703/what-is-byte-usercall-eax-and-edi">这篇文章</a>中对*(_BYTE *)的解释：</p>
+<p><a target="_blank" rel="noopener" href="https://reverseengineering.stackexchange.com/questions/13703/what-is-byte-usercall-eax-and-edi">这篇文章</a>中对**<em>(_BYTE <em>)</em></em>的解释：</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">This actually has two distinctive parts, evaluated one after the other.</span><br><span class="line"></span><br><span class="line">First, (_BYTE *) casts a value or a register to be a byte pointer. This is similar to assigning the value to a C variable which is defined as byte *.</span><br><span class="line"></span><br><span class="line">Second, * dereferences the address and retrieves the value in that address, value is assumed to be of the type of the pointer, in our case _BYTE.</span><br></pre></td></tr></table></figure>
 <p>拆解出来就是先将值转换为字节指针，之后再找地址对应值。</p>
 <hr>
@@ -234,9 +232,9 @@
 <p>先用ida看了一下，反编译出来的结果很简单，看一看有没有什么有效的字符信息。直接看到一个像flag的东西，我开始只提交了字符，没加前面数字，还好再尝试提交了一次，不然又掉坑里面了。</p>
 <p>###getit</p>
 <p>ida反编译main函数，感觉核心内容是对”/tmp/flag.txt”文件的写入，fputc做的就是写入操作，另外关注s和t两个参数,从长度来看，感觉又是和logmein一样的套路，但是简单很多，也没什么大小端。</p>
-<p>但是总是提交不对，我还以为第二步文件写入打乱顺序了写入，可能要动态调试因为太麻烦了准备看一下到底怎么回事，结果是ida里面字符串只显示了harifCTF{}，掉了一个S,ghidra里面可以正常显示出，我不知道为什么，我差点骂出世界上最脏的脏话。不过这道题确实可以动态分析跑出来，更快一点。</p>
+<p>但是总是提交不对，我还以为第二步文件写入打乱顺序了写入，可能要动态调试因为太麻烦了准备看一下到底怎么回事，结果是ida里面字符串只显示了<code>harifCTF&#123;&#125;</code>，掉了一个S,ghidra里面可以正常显示出，我不知道为什么，我差点骂出世界上最脏的脏话。不过这道题确实可以动态分析跑出来，更快一点。</p>
 <p>###python-trade</p>
-<p>这一道题是python反编译，pip install uncompyle，用uncompyle反编译出来直接是python代码了。</p>
+<p>这一道题是python反编译，<code>pip install uncompyle</code>，用uncompyle反编译出来直接是python代码了。</p>
 <p>这里有一个点就是，base64解码出来的结果是bytes。</p>
 <p>###re1</p>
 <p>反编译之后看到strcmp，v9和v5，v5是用户输入，突破口就是v9了，顺着找过去是一串16进制数，分成了两段，直接16进制转ascii码看一下，是一串像flag的东西，但是顺序是反的，从程序逻辑来看就是flag，不知道考点是啥。</p>
@@ -326,6 +324,7 @@
 
       <!--noindex-->
       <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#XCTF%E6%94%BB%E9%98%B2%E4%B8%96%E7%95%8C"><span class="nav-number">1.</span> <span class="nav-text">XCTF攻防世界</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#open-source"><span class="nav-number">1.1.</span> <span class="nav-text">open_source</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#logmein"><span class="nav-number">1.2.</span> <span class="nav-text">logmein</span></a></li></ol></li></ol></div>
       </div>
       <!--/noindex-->
 
