@@ -29,7 +29,7 @@
 <meta property="og:locale" content="en_US">
 <meta property="og:image" content="http://example.com/2021/03/06/%E9%80%86%E5%90%91Write-up%E5%90%88%E9%9B%86/reverse-1.png">
 <meta property="article:published_time" content="2021-03-06T07:06:06.000Z">
-<meta property="article:modified_time" content="2021-03-10T03:33:08.657Z">
+<meta property="article:modified_time" content="2021-04-07T13:06:21.075Z">
 <meta property="article:author" content="yjy123">
 <meta property="article:tag" content="逆向">
 <meta name="twitter:card" content="summary">
@@ -183,7 +183,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">Edited on</span>
-                <time title="Modified: 2021-03-10 11:33:08" itemprop="dateModified" datetime="2021-03-10T11:33:08+08:00">2021-03-10</time>
+                <time title="Modified: 2021-04-07 21:06:21" itemprop="dateModified" datetime="2021-04-07T21:06:21+08:00">2021-04-07</time>
               </span>
 
           
@@ -243,6 +243,30 @@
 <p>而且这道题在macos下会乱码。</p>
 <h3 id="game"><a href="#game" class="headerlink" title="game"></a>game</h3><p>这道题感觉程序比较大，简单用ida看了一下，感觉没什么有效信息，所以还是运行玩一玩游戏，感觉这道题可能用动态分析工具比较好，现在是考虑修改内存把灯全部点亮。</p>
 <h3 id="小总结"><a href="#小总结" class="headerlink" title="小总结"></a>小总结</h3><p>做了好几道题，简单题基本上还是读C，要熟悉16进制的各种操作，而且本质就是通过加密算法写对应的解密算法。</p>
+<h3 id="simple-unpack"><a href="#simple-unpack" class="headerlink" title="simple-unpack"></a>simple-unpack</h3><p>给了提示是脱壳相关的，之前电脑里面下了upx，查了一下指令，upx -d 直接脱壳，感觉我 -h不太会看，应该要学一学。</p>
+<h3 id="Hello-CTF"><a href="#Hello-CTF" class="headerlink" title="Hello, CTF"></a>Hello, CTF</h3><p>这道题，F5反编译之后直接阅读代码，很好理解，就是输入和字符串“437261636b4d654a757374466f7246756e”比较，但是输入字符串长度应该为17，被比较的字符串长度为35，我当时就像，啊，这是溢出吗，没什么想法，然后到处看了看，无意间回到题目描述</p>
+<blockquote>
+<p>菜鸡发现Flag似乎并不一定是明文比较的</p>
+</blockquote>
+<p>然后我悟了，16进制转ascii，flag就出来了，怎么说呢，一周多没做题了，感觉脑子就像生锈了一样，不太敏锐了，在思考如果没有题目描述，我解这道题要多久。</p>
+<p>之前连做六七道题的时候，对有些套路还是有点感觉的，很快就能get到，到了这周，我就恨自己是块木头。</p>
+<h3 id="no-strings-attached"><a href="#no-strings-attached" class="headerlink" title="no-strings-attached"></a>no-strings-attached</h3><p>这道题做的太自闭了，看了题目描述，说运行就可以拿flag，所以全心全意想着怎么运行起来，linux下的32位elf文件，好不容易安装32位的lib库，运行还报错，整个人都傻了。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo apt-get install lib32ncurses5</span><br></pre></td></tr></table></figure>
+<p>最后还是回归ida，结果就是一个普通套路的加解密，两个数组操作，浪费大量时间想把它跑起来的我深深叹了一口气。</p>
+<h3 id="maze"><a href="#maze" class="headerlink" title="maze"></a>maze</h3><p>一开始直接IDA静态分析，F5反编译之后，重点看了一下main函数，感觉有点不太对，因为直接靠用户输入进行规则判定，唯一有参考价值的字符串asc_601060看不出什么名堂，感觉静态分析不太可靠。难道是按规则穷举暴力破解吗？后面仔细观察if语句里面的判断条件，看了一下出现的十进制数对应的ascii码（其实是因为读了一半读吐了，为了避免入门到放弃另寻出路。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">79 - O</span><br><span class="line">111 - o</span><br><span class="line">46 - .</span><br><span class="line">48 - 0</span><br><span class="line">35 - #</span><br></pre></td></tr></table></figure>
+
+<p>参考了一下IDA动态调试的<a target="_blank" rel="noopener" href="https://blog.csdn.net/abc_670/article/details/80066817">博客</a></p>
+<p>把几个判断跳转的地方，特别是跳转到label_22要退出的地方下了断点，试一试<code>nctf&#123;000000000000000000&#125;</code>，发现可以单步。弄了半天无发现，倒是某一篇博客里面提到，想要练手可以试一试xctf的track2，这就意味着，这道题应该不是动态调试。</p>
+<p>又回到main函数，但是判断语句太多，括号什么的不好看，装了一个高亮括号的<a target="_blank" rel="noopener" href="https://www.52pojie.cn/thread-727586-1-1.html">hexlight插件</a>，但是感觉使用感一般。</p>
+<p>之后就是分析-推翻-分析-推翻，搞到自闭的循环，最后回到题目描 述，菜鸡走出迷宫s m de，结合asc_601060，一共64位，那么弄成8*8矩阵看看什么情况，就真•迷宫呗，不过‘maze’这个词本身也有迷宫的意思，哎，这就是英语不好的代价吗。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">··******</span><br><span class="line">*···*··*</span><br><span class="line">***·*·**</span><br><span class="line">**··*·**</span><br><span class="line">*··*#··*</span><br><span class="line">**·***·*</span><br><span class="line">**·····*</span><br><span class="line">********</span><br></pre></td></tr></table></figure>
+<p>那么[<strong>‘0’</strong>,<strong>‘o’</strong>,<strong>‘O’</strong>,<strong>‘.’</strong>]也就是四个方向，走出迷宫的路径就是flag，开始在分析v9的时候（ida一开始显示成v10，类型是__int64），总是不知道到底是个什么，SHIDWORD之前也没见过，推测是不是计数器，但是知道是迷宫之后，猜测可能是二维数组。</p>
+<p>查资料之后发现这个<a target="_blank" rel="noopener" href="https://reverseengineering.stackexchange.com/questions/8296/whats-the-function-of-lodword-and-hidword">issue</a>里面有详细解释，SHIDWORD其实就是取v9的高位，存储的是列，v9低位是行，这个从最后一句判断是不是找到出口了可以看出来。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">if ( asc_601060[8 * (signed int)v9 + SHIDWORD(v9)] !&#x3D; 35 )</span><br></pre></td></tr></table></figure>
+<p>那么再看和四个方向相关的函数，加法的就是👇，👉，减法的就是👇，👈；再看具体传入函数的参数，<code>(_DWORD *)&amp;v9 + 1</code>和<code>(int *)&amp;v9</code>，传入的是地址，+1也比较好理解，因为小端存储，高位放在高地址里面，那么显然<code>&amp;v9 + 1</code>就是<code>SHIDWORD(v9)</code>。加上自减操作，所以O对应的就是左，以此类推。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">O  o  . 0</span><br><span class="line">左 右 上 下  </span><br></pre></td></tr></table></figure>
+<p>个人觉得这道题一如以上来就莽的话蛮搞心态的，但是如果结合题目和描述各方面信息+经验多对这些敏感的话就其实简单。断断续续做了好几天，差点就做不下去了。不过也发现自己指针什么的全部忘光了，只是还是要经常用才记得住。</p>
 
     </div>
 
@@ -264,7 +288,10 @@
     <a href="/2021/03/06/%E9%80%86%E5%90%91%E5%85%A5%E9%97%A8%E7%AC%94%E8%AE%B0/" rel="prev" title="逆向入门笔记">
       <i class="fa fa-chevron-left"></i> 逆向入门笔记
     </a></div>
-      <div class="post-nav-item"></div>
+      <div class="post-nav-item">
+    <a href="/2021/04/07/%E5%A5%87%E5%A5%87%E6%80%AA%E6%80%AAmac%E4%BD%BF%E7%94%A8%E6%8A%80%E5%B7%A7/" rel="next" title="奇奇怪怪mac使用技巧">
+      奇奇怪怪mac使用技巧 <i class="fa fa-chevron-right"></i>
+    </a></div>
     </div>
       </footer>
     
@@ -324,7 +351,7 @@
 
       <!--noindex-->
       <div class="post-toc-wrap sidebar-panel">
-          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#XCTF%E6%94%BB%E9%98%B2%E4%B8%96%E7%95%8C"><span class="nav-number">1.</span> <span class="nav-text">XCTF攻防世界</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#open-source"><span class="nav-number">1.1.</span> <span class="nav-text">open_source</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#logmein"><span class="nav-number">1.2.</span> <span class="nav-text">logmein</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#insanity"><span class="nav-number">1.3.</span> <span class="nav-text">insanity</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#getit"><span class="nav-number">1.4.</span> <span class="nav-text">getit</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#python-trade"><span class="nav-number">1.5.</span> <span class="nav-text">python-trade</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#re1"><span class="nav-number">1.6.</span> <span class="nav-text">re1</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#game"><span class="nav-number">1.7.</span> <span class="nav-text">game</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%B0%8F%E6%80%BB%E7%BB%93"><span class="nav-number">1.8.</span> <span class="nav-text">小总结</span></a></li></ol></li></ol></div>
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#XCTF%E6%94%BB%E9%98%B2%E4%B8%96%E7%95%8C"><span class="nav-number">1.</span> <span class="nav-text">XCTF攻防世界</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#open-source"><span class="nav-number">1.1.</span> <span class="nav-text">open_source</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#logmein"><span class="nav-number">1.2.</span> <span class="nav-text">logmein</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#insanity"><span class="nav-number">1.3.</span> <span class="nav-text">insanity</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#getit"><span class="nav-number">1.4.</span> <span class="nav-text">getit</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#python-trade"><span class="nav-number">1.5.</span> <span class="nav-text">python-trade</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#re1"><span class="nav-number">1.6.</span> <span class="nav-text">re1</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#game"><span class="nav-number">1.7.</span> <span class="nav-text">game</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%B0%8F%E6%80%BB%E7%BB%93"><span class="nav-number">1.8.</span> <span class="nav-text">小总结</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#simple-unpack"><span class="nav-number">1.9.</span> <span class="nav-text">simple-unpack</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Hello-CTF"><span class="nav-number">1.10.</span> <span class="nav-text">Hello, CTF</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#no-strings-attached"><span class="nav-number">1.11.</span> <span class="nav-text">no-strings-attached</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#maze"><span class="nav-number">1.12.</span> <span class="nav-text">maze</span></a></li></ol></li></ol></div>
       </div>
       <!--/noindex-->
 
@@ -338,7 +365,7 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">8</span>
+          <span class="site-state-item-count">9</span>
           <span class="site-state-item-name">posts</span>
         </a>
       </div>
