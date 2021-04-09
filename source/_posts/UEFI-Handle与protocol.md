@@ -55,7 +55,7 @@ EDK II UEFI Driver Writer's Guide中对Interface的描述：
 
 Interface本质就是Protocol的实例，也很好理解，在使用Protocol的时候会有Install操作，这个操作就是生成*PROTOCOL_INTERFACE*结构体，再挂载到Handle上。一个Protocol可能具有很多不同的Interface，挂载在Handle上，所以其实Handle和Protocol并没有直接相连接。
 
-![](image1.ipg)
+![](image1.jpg)
 
 ### Handle,Protocol和Interface之间关系
 
@@ -73,7 +73,7 @@ Interface本质就是Protocol的实例，也很好理解，在使用Protocol的�
 > 版权声明：本文为CSDN博主「河马虚拟化」的原创文章，遵循CC 4.0 BY-SA版权协议，转载请附上原文出处链接及本声明。
 > 原文链接：https://blog.csdn.net/lindahui2008/article/details/78796550
 
-![](image2.jpg)
+![](image2.jpeg)
 
 ```
 ///
