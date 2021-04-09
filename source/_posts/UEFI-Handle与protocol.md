@@ -1,7 +1,7 @@
 ---
 title: UEFI Handle与protocol
 date: 2021-04-09 09:48:06
-tags:UEFI
+tags: UEFI
 ---
 
 最近看了一些UEFI中handle和protocol的资料，这里做一个整理，写一点自己的理解。
