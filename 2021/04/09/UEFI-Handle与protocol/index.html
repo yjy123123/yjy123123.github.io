@@ -27,14 +27,14 @@
 <meta property="og:site_name" content="yjy&#39;s Blog">
 <meta property="og:description" content="最近看了一些UEFI中handle和protocol的资料，这里做一个整理，写一点自己的理解。">
 <meta property="og:locale" content="en_US">
-<meta property="og:image" content="http://example.com/image1.ipg">
-<meta property="og:image" content="http://example.com/image2.jpg">
+<meta property="og:image" content="http://example.com/2021/04/09/UEFI-Handle%E4%B8%8Eprotocol/image1.jpg">
+<meta property="og:image" content="http://example.com/2021/04/09/UEFI-Handle%E4%B8%8Eprotocol/image2.jpeg">
 <meta property="article:published_time" content="2021-04-09T01:48:06.000Z">
-<meta property="article:modified_time" content="2021-04-09T07:37:03.804Z">
+<meta property="article:modified_time" content="2021-04-09T11:14:52.672Z">
 <meta property="article:author" content="yjy123">
 <meta property="article:tag" content="UEFI">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:image" content="http://example.com/image1.ipg">
+<meta name="twitter:image" content="http://example.com/2021/04/09/UEFI-Handle%E4%B8%8Eprotocol/image1.jpg">
 
 <link rel="canonical" href="http://example.com/2021/04/09/UEFI-Handle%E4%B8%8Eprotocol/">
 
@@ -178,7 +178,7 @@
               <span class="post-meta-item-text">Posted on</span>
               
 
-              <time title="Created: 2021-04-09 09:48:06 / Modified: 15:37:03" itemprop="dateCreated datePublished" datetime="2021-04-09T09:48:06+08:00">2021-04-09</time>
+              <time title="Created: 2021-04-09 09:48:06 / Modified: 19:14:52" itemprop="dateCreated datePublished" datetime="2021-04-09T09:48:06+08:00">2021-04-09</time>
             </span>
 
           
@@ -241,14 +241,14 @@
 <p>The protocol is composed of a GUID and a protocol interface structure.<br>Many times, the UEFI driver that produces a protocol interface maintains additional private data fields. The protocol interface structure itself simply contains pointers to the protocol function. </p>
 </blockquote>
 <p>Interface本质就是Protocol的实例，也很好理解，在使用Protocol的时候会有Install操作，这个操作就是生成<em>PROTOCOL_INTERFACE</em>结构体，再挂载到Handle上。一个Protocol可能具有很多不同的Interface，挂载在Handle上，所以其实Handle和Protocol并没有直接相连接。</p>
-<p><img src="/image1.ipg"></p>
+<p><img src="/2021/04/09/UEFI-Handle%E4%B8%8Eprotocol/image1.jpg"></p>
 <h3 id="Handle-Protocol和Interface之间关系"><a href="#Handle-Protocol和Interface之间关系" class="headerlink" title="Handle,Protocol和Interface之间关系"></a>Handle,Protocol和Interface之间关系</h3><p><a target="_blank" rel="noopener" href="https://blog.csdn.net/lindahui2008/article/details/78796550">如何理解UEFI中handle和protocol的概念</a>中的这张图我觉得是目前画的最清晰的一张描述三者关系的图片。</p>
 <p>原文提到</p>
 <blockquote>
 <p>首先系统中有两个大的双向链表：<br>1.以gHandleList为表头的链表，链表中每个Entry为IHANDLE结构体，将系统中所有的handle链接到一起；<br>2.以mProtocolDatabase为表头的链表，链表中每个Entry为PROTOCOL_ENTRY结构体，用于将系统中所有的protocol链接到一起。</p>
 <p>首先每个handle用一个IHANDLE结构体表示，IHANDLE中的Protocols指向一个双向链表（红色箭头表示），用于将所有install到该handle的所有protocol链接到一起，每一个install的protocol都由一个对应的PROTOCOL_INTERFACE结构体来表示。<br>其次，每个protocol由一个PROTOCOL_ENTRY来表示，一个protocol可能被install到多个handle中，所以每个HANDLE_ENTRY中的Protocols都由可能会由多个PROTOCOL_INTERFACE实例，并且这些PROTOCOL_INTERFACE实例也被链表链接起来（绿色箭头表示）。<br>————————————————<br>版权声明：本文为CSDN博主「河马虚拟化」的原创文章，遵循CC 4.0 BY-SA版权协议，转载请附上原文出处链接及本声明。<br>原文链接：<a target="_blank" rel="noopener" href="https://blog.csdn.net/lindahui2008/article/details/78796550">https://blog.csdn.net/lindahui2008/article/details/78796550</a></p>
 </blockquote>
-<p><img src="/image2.jpg"></p>
+<p><img src="/2021/04/09/UEFI-Handle%E4%B8%8Eprotocol/image2.jpeg"></p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line">&#x2F;&#x2F;&#x2F;</span><br><span class="line">&#x2F;&#x2F;&#x2F; PROTOCOL_INTERFACE - each protocol installed on a handle is tracked</span><br><span class="line">&#x2F;&#x2F;&#x2F; with a protocol interface structure</span><br><span class="line">&#x2F;&#x2F;&#x2F;</span><br><span class="line">typedef struct &#123;</span><br><span class="line">  UINTN                       Signature;</span><br><span class="line">  &#x2F;&#x2F;&#x2F; Link on IHANDLE.Protocols</span><br><span class="line">  LIST_ENTRY                  Link;   </span><br><span class="line">  &#x2F;&#x2F;&#x2F; Back pointer</span><br><span class="line">  IHANDLE                     *Handle;  </span><br><span class="line">  &#x2F;&#x2F;&#x2F; Link on PROTOCOL_ENTRY.Protocols</span><br><span class="line">  LIST_ENTRY                  ByProtocol; </span><br><span class="line">  &#x2F;&#x2F;&#x2F; The protocol ID</span><br><span class="line">  PROTOCOL_ENTRY              *Protocol;  </span><br><span class="line">  &#x2F;&#x2F;&#x2F; The interface value</span><br><span class="line">  VOID                        *Interface; </span><br><span class="line">  &#x2F;&#x2F;&#x2F; OPEN_PROTOCOL_DATA list</span><br><span class="line">  LIST_ENTRY                  OpenList;       </span><br><span class="line">  UINTN                       OpenListCount;</span><br><span class="line"></span><br><span class="line">&#125; PROTOCOL_INTERFACE;</span><br></pre></td></tr></table></figure>
 <p>PROTOCOL_INTERFACE是Interface的结构体。</p>
 <p>其中的Link的类型是EFI_LIST_ENTRY，这个结构体里面就是前向指针和后向指针，就是将它和Handle和其他Interface链接起来。</p>
