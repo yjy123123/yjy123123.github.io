@@ -30,7 +30,7 @@
 <meta property="og:image" content="http://example.com/2021/04/09/UEFI-Handle%E4%B8%8Eprotocol/image1.jpg">
 <meta property="og:image" content="http://example.com/2021/04/09/UEFI-Handle%E4%B8%8Eprotocol/image2.jpeg">
 <meta property="article:published_time" content="2021-04-09T01:48:06.000Z">
-<meta property="article:modified_time" content="2021-04-09T11:14:52.672Z">
+<meta property="article:modified_time" content="2021-04-09T11:25:18.177Z">
 <meta property="article:author" content="yjy123">
 <meta property="article:tag" content="UEFI">
 <meta name="twitter:card" content="summary">
@@ -178,7 +178,7 @@
               <span class="post-meta-item-text">Posted on</span>
               
 
-              <time title="Created: 2021-04-09 09:48:06 / Modified: 19:14:52" itemprop="dateCreated datePublished" datetime="2021-04-09T09:48:06+08:00">2021-04-09</time>
+              <time title="Created: 2021-04-09 09:48:06 / Modified: 19:25:18" itemprop="dateCreated datePublished" datetime="2021-04-09T09:48:06+08:00">2021-04-09</time>
             </span>
 
           
@@ -261,7 +261,7 @@
 <p>IHANDLE的结构体除了Protocols和一个Key也的确没有其他东西。AllHandles就是用于连接HandleList，Protocols是连接所有interface，Key目前没有看到太多使用的地方。</p>
 <p>以上这些结构体都可以在edk2/MdeMoudulePkg/Core/Dxe/Hand/Handle.h中找到。</p>
 <p>edk2/MdeMoudulePkg/Core/Dxe/Hand/Handle.c中就是具体Install、Find的实现了。源代码阅读这个不知道还会不会写。</p>
-<h3 id="小结"><a href="#小结" class="headerlink" title="小结"></a>小结</h3><p>Protocol就是UEFI中提供Library功能的函数库，每个Image（.efi文件）在运行过程中会需要用到一些外部函数，所以每个Image就有一个Handle来Install所有需要的Protocol，这些Protocol实例化之后就是Interface，挂载在Handle上。</p>
+<h3 id="小结"><a href="#小结" class="headerlink" title="小结"></a>小结</h3><p>Protocol就是UEFI中提供Library功能的函数库，每个Image（.efi文件）在运行过程中会需要用到一些外部函数，所以每个Image就有一个Handle来Install所有需要的Protocol，这些Protocol实例化之后就是Interface，挂载在Handle上。mProtocolDatabase就是一条包含系统中所有Protocol的双向链表，gHandleList就是包含系统中所有Handle的双向链表。</p>
 <p>感觉目前分析Handle和Protocol分析的好的文章还蛮多的，我好像也没有什么产出，不过还是想记录一下自己这段时间看的东西。</p>
 
     </div>
@@ -284,7 +284,10 @@
     <a href="/2021/04/07/%E5%A5%87%E5%A5%87%E6%80%AA%E6%80%AAmac%E4%BD%BF%E7%94%A8%E6%8A%80%E5%B7%A7/" rel="prev" title="奇奇怪怪mac使用技巧">
       <i class="fa fa-chevron-left"></i> 奇奇怪怪mac使用技巧
     </a></div>
-      <div class="post-nav-item"></div>
+      <div class="post-nav-item">
+    <a href="/2021/04/09/SeedLab-ShellShock%E5%AE%9E%E9%AA%8C/" rel="next" title="SeedLab ShellShock实验">
+      SeedLab ShellShock实验 <i class="fa fa-chevron-right"></i>
+    </a></div>
     </div>
       </footer>
     
@@ -358,12 +361,12 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">10</span>
+          <span class="site-state-item-count">14</span>
           <span class="site-state-item-name">posts</span>
         </a>
       </div>
       <div class="site-state-item site-state-tags">
-        <span class="site-state-item-count">6</span>
+        <span class="site-state-item-count">10</span>
         <span class="site-state-item-name">tags</span>
       </div>
   </nav>
