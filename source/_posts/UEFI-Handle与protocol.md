@@ -156,6 +156,7 @@ edk2/MdeMoudulePkg/Core/Dxe/Hand/Handle.c中就是具体Install、Find的实现�
 
 ### 小结
 
-Protocol就是UEFI中提供Library功能的函数库，每个Image（.efi文件）在运行过程中会需要用到一些外部函数，所以每个Image就有一个Handle来Install所有需要的Protocol，这些Protocol实例化之后就是Interface，挂载在Handle上。
+Protocol就是UEFI中提供Library功能的函数库，每个Image（.efi文件）在运行过程中会需要用到一些外部函数，所以每个Image就有一个Handle来Install所有需要的Protocol，这些Protocol实例化之后就是Interface，挂载在Handle上。mProtocolDatabase就是一条包含系统中所有Protocol的双向链表，gHandleList就是包含系统中所有Handle的双向链表。
 
 感觉目前分析Handle和Protocol分析的好的文章还蛮多的，我好像也没有什么产出，不过还是想记录一下自己这段时间看的东西。
+
