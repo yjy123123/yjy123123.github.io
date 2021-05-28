@@ -86,9 +86,7 @@ Command: xspear --raw %F -a -b {your-blind-xss-url}
 
 这个工具是Chrome的插件，使用非常的简单，用户手动浏览界面，这个工具会自动扫描，感觉也还蛮厉害的。
 
-项目地址：
-
-https://0kee.360.cn/domXss/
+项目地址： https://0kee.360.cn/domXss/
 
 但是这个网址里面直接下载可能会失败，所以我用了[收藏猫插件](https://chrome.pictureknow.com/)下载。
 
