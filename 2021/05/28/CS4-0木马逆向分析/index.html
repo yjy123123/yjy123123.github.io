@@ -1,0 +1,532 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.3.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"example.com","root":"/","scheme":"Muse","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="不过是老板的任务罢了，第一次分析恶意代码，差点整吐了。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="CS4.0木马逆向分析">
+<meta property="og:url" content="http://example.com/2021/05/28/CS4-0%E6%9C%A8%E9%A9%AC%E9%80%86%E5%90%91%E5%88%86%E6%9E%90/index.html">
+<meta property="og:site_name" content="yjy&#39;s Blog">
+<meta property="og:description" content="不过是老板的任务罢了，第一次分析恶意代码，差点整吐了。">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="http://example.com/2021/05/28/CS4-0%E6%9C%A8%E9%A9%AC%E9%80%86%E5%90%91%E5%88%86%E6%9E%90/1.png">
+<meta property="og:image" content="http://example.com/2021/05/28/CS4-0%E6%9C%A8%E9%A9%AC%E9%80%86%E5%90%91%E5%88%86%E6%9E%90/2.png">
+<meta property="og:image" content="http://example.com/2021/05/28/CS4-0%E6%9C%A8%E9%A9%AC%E9%80%86%E5%90%91%E5%88%86%E6%9E%90/3.png">
+<meta property="og:image" content="http://example.com/2021/05/28/CS4-0%E6%9C%A8%E9%A9%AC%E9%80%86%E5%90%91%E5%88%86%E6%9E%90/4.png">
+<meta property="og:image" content="http://example.com/2021/05/28/CS4-0%E6%9C%A8%E9%A9%AC%E9%80%86%E5%90%91%E5%88%86%E6%9E%90/5.png">
+<meta property="og:image" content="http://example.com/2021/05/28/CS4-0%E6%9C%A8%E9%A9%AC%E9%80%86%E5%90%91%E5%88%86%E6%9E%90/6.png">
+<meta property="og:image" content="http://example.com/2021/05/28/CS4-0%E6%9C%A8%E9%A9%AC%E9%80%86%E5%90%91%E5%88%86%E6%9E%90/7.png">
+<meta property="og:image" content="http://example.com/2021/05/28/CS4-0%E6%9C%A8%E9%A9%AC%E9%80%86%E5%90%91%E5%88%86%E6%9E%90/8.png">
+<meta property="og:image" content="http://example.com/2021/05/28/CS4-0%E6%9C%A8%E9%A9%AC%E9%80%86%E5%90%91%E5%88%86%E6%9E%90/9.png">
+<meta property="og:image" content="http://example.com/2021/05/28/CS4-0%E6%9C%A8%E9%A9%AC%E9%80%86%E5%90%91%E5%88%86%E6%9E%90/10.png">
+<meta property="og:image" content="http://example.com/2021/05/28/CS4-0%E6%9C%A8%E9%A9%AC%E9%80%86%E5%90%91%E5%88%86%E6%9E%90/11.png">
+<meta property="og:image" content="http://example.com/2021/05/28/CS4-0%E6%9C%A8%E9%A9%AC%E9%80%86%E5%90%91%E5%88%86%E6%9E%90/12.png">
+<meta property="og:image" content="http://example.com/2021/05/28/CS4-0%E6%9C%A8%E9%A9%AC%E9%80%86%E5%90%91%E5%88%86%E6%9E%90/13.png">
+<meta property="og:image" content="http://example.com/2021/05/28/CS4-0%E6%9C%A8%E9%A9%AC%E9%80%86%E5%90%91%E5%88%86%E6%9E%90/14.png">
+<meta property="og:image" content="http://example.com/2021/05/28/CS4-0%E6%9C%A8%E9%A9%AC%E9%80%86%E5%90%91%E5%88%86%E6%9E%90/15.png">
+<meta property="og:image" content="http://example.com/2021/05/28/CS4-0%E6%9C%A8%E9%A9%AC%E9%80%86%E5%90%91%E5%88%86%E6%9E%90/16.png">
+<meta property="og:image" content="http://example.com/2021/05/28/CS4-0%E6%9C%A8%E9%A9%AC%E9%80%86%E5%90%91%E5%88%86%E6%9E%90/17.png">
+<meta property="og:image" content="http://example.com/2021/05/28/CS4-0%E6%9C%A8%E9%A9%AC%E9%80%86%E5%90%91%E5%88%86%E6%9E%90/18.png">
+<meta property="og:image" content="http://example.com/2021/05/28/CS4-0%E6%9C%A8%E9%A9%AC%E9%80%86%E5%90%91%E5%88%86%E6%9E%90/19.png">
+<meta property="og:image" content="http://example.com/2021/05/28/CS4-0%E6%9C%A8%E9%A9%AC%E9%80%86%E5%90%91%E5%88%86%E6%9E%90/20.png">
+<meta property="og:image" content="http://example.com/2021/05/28/CS4-0%E6%9C%A8%E9%A9%AC%E9%80%86%E5%90%91%E5%88%86%E6%9E%90/21.png">
+<meta property="article:published_time" content="2021-05-28T08:19:52.000Z">
+<meta property="article:modified_time" content="2021-05-28T12:45:34.684Z">
+<meta property="article:author" content="yjy123">
+<meta property="article:tag" content="恶意代码分析">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://example.com/2021/05/28/CS4-0%E6%9C%A8%E9%A9%AC%E9%80%86%E5%90%91%E5%88%86%E6%9E%90/1.png">
+
+<link rel="canonical" href="http://example.com/2021/05/28/CS4-0%E6%9C%A8%E9%A9%AC%E9%80%86%E5%90%91%E5%88%86%E6%9E%90/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'en'
+  };
+</script>
+
+  <title>CS4.0木马逆向分析 | yjy's Blog</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">yjy's Blog</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>Home</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>Archives</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
+    <link itemprop="mainEntityOfPage" href="http://example.com/2021/05/28/CS4-0%E6%9C%A8%E9%A9%AC%E9%80%86%E5%90%91%E5%88%86%E6%9E%90/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="yjy123">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="yjy's Blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          CS4.0木马逆向分析
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+              
+
+              <time title="Created: 2021-05-28 16:19:52 / Modified: 20:45:34" itemprop="dateCreated datePublished" datetime="2021-05-28T16:19:52+08:00">2021-05-28</time>
+            </span>
+
+          
+            <span id="/2021/05/28/CS4-0%E6%9C%A8%E9%A9%AC%E9%80%86%E5%90%91%E5%88%86%E6%9E%90/" class="post-meta-item leancloud_visitors" data-flag-title="CS4.0木马逆向分析" title="Views">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">Views: </span>
+              <span class="leancloud-visitors-count"></span>
+            </span>
+  
+  <span class="post-meta-item">
+    
+      <span class="post-meta-item-icon">
+        <i class="far fa-comment"></i>
+      </span>
+      <span class="post-meta-item-text">Valine: </span>
+    
+    <a title="valine" href="/2021/05/28/CS4-0%E6%9C%A8%E9%A9%AC%E9%80%86%E5%90%91%E5%88%86%E6%9E%90/#valine-comments" itemprop="discussionUrl">
+      <span class="post-comments-count valine-comment-count" data-xid="/2021/05/28/CS4-0%E6%9C%A8%E9%A9%AC%E9%80%86%E5%90%91%E5%88%86%E6%9E%90/" itemprop="commentCount"></span>
+    </a>
+  </span>
+  
+  
+            <div class="post-description">不过是老板的任务罢了，第一次分析恶意代码，差点整吐了。</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>这个是一个课程作业，但是我真的搞了可久了，重新整理记录一下。分析的恶意样本就是CS工具生成的64位EXE文件，生成过程这里就不赘述了。目前现有的分析CS木马的博客还是挺多的。</p>
+<p>先用了奇安信的在线沙箱看了一下具体功能。</p>
+<p><img src="/2021/05/28/CS4-0%E6%9C%A8%E9%A9%AC%E9%80%86%E5%90%91%E5%88%86%E6%9E%90/1.png"></p>
+<p><img src="/2021/05/28/CS4-0%E6%9C%A8%E9%A9%AC%E9%80%86%E5%90%91%E5%88%86%E6%9E%90/2.png"></p>
+<p>没有文件操作，没有注册表操作，但是和服务器进行了通信。</p>
+<h3 id="静态分析"><a href="#静态分析" class="headerlink" title="静态分析"></a>静态分析</h3><p><img src="/2021/05/28/CS4-0%E6%9C%A8%E9%A9%AC%E9%80%86%E5%90%91%E5%88%86%E6%9E%90/3.png"></p>
+<p>首先分析了一下<code>main</code>函数，<code>main</code>函数中包含<code>sub_402A20</code>和<code>sub_401755</code>两个函数，然后进行一个休眠10s的循环中。</p>
+<p><img src="/2021/05/28/CS4-0%E6%9C%A8%E9%A9%AC%E9%80%86%E5%90%91%E5%88%86%E6%9E%90/4.png"></p>
+<p><code>sub_401755</code>函数中包含该程序的一些主要功能。<code>GetTickCount</code>返回的是从操作系统启动到现在所经过的毫秒数，这里<code>GetTickCount</code>模了0x26AA，这一步的操作是为了获取一个随机数，用于后续字符串的拼接。</p>
+<p>这里的sprintf是对字符串<code>MSSE-%d-server</code>进行一个拼接，<code>MSSE-%d-server</code>是Cobalt Strike的一个很明显特征。</p>
+<p>因为反编译的代码里面每个参数不是很清晰，所以这里从汇编代码看一下拼接的结果。</p>
+<p><img src="/2021/05/28/CS4-0%E6%9C%A8%E9%A9%AC%E9%80%86%E5%90%91%E5%88%86%E6%9E%90/5.png"></p>
+<p>一开始就是对<code>GetTickCount</code>的一个除法，结果存放在EAX中，再往后看的话，有一个<code>mov [rsp+68h+var_10], edx</code>的操作，是把<code>GetTickCount</code>取模的结果放入了栈中。</p>
+<p>这里是用了<code>sprintf</code>函数，关于函数参数传参，在Windows X64中，函数参数的前四个参数是从左至右依次存放于RCX、RDX、R8、R9寄存器里面，剩下的参数从右至左顺序入栈；栈的增长方向为从高地址到低地址。</p>
+<p>在回到汇编代码，首先RCX中传入<code>SecurityAttributes</code>，RDX中为<code>aCCCCCCCCCmsseD</code>,即<code>%c%c%c%c%c%c%c%c%cMSSE-%d-server</code>，r8d即r8寄存器的低32位存放<code>\</code>,r9d中也是<code>\</code>，剩下的参数是从右至左入栈，依次是<code>GetTickCount%0x24aa\epip\.</code>，那么从右往左是<code>.\pipe\ GetTickCount%0x24aa</code>。</p>
+<p><code>Sprintf</code>函数是用来拼接字符串的，那么结合传参的顺序来看，整个的结果就是<code>\\.\pipe\MSSE-v2-server</code>， 存放在<code>SecurityAttributes</code>里面，就是管道名称，是一个全局变量。</p>
+<p>之后是创建线程，继续跟进查看。</p>
+<p><img src="/2021/05/28/CS4-0%E6%9C%A8%E9%A9%AC%E9%80%86%E5%90%91%E5%88%86%E6%9E%90/6.png"></p>
+<p><code>sub_401645</code>函数里面继续调用了一个<code>sub_401590</code>函数，<code>unk_404010</code>是一连串不可读的字符，目前不太清楚具体功能，只能看看<code>sub_401590</code>的内容。</p>
+<p><img src="/2021/05/28/CS4-0%E6%9C%A8%E9%A9%AC%E9%80%86%E5%90%91%E5%88%86%E6%9E%90/7.png"></p>
+<p><code>sub_401590</code>中函数还是比较多的，看了一下调用函数的名称，应该就是核心功能实现的地方了。首先是<code>CreateNamedPipeA</code>函数，用来创建一个命名管道；<code>ConnectNamedPipe</code>函数用于等待客户端连接命名管道；<code>WriteFile</code>用于写文件；<code>CloseHandle</code>用于关闭线程。</p>
+<p>那么可以合理假设该函数的整个功能是先创建一个命名管道，然后等待连接，<code>WriteFile</code>函数就是用于向管道中写入命令。</p>
+<p><img src="/2021/05/28/CS4-0%E6%9C%A8%E9%A9%AC%E9%80%86%E5%90%91%E5%88%86%E6%9E%90/8.png"></p>
+<p>查看汇编代码，看具体创建管道的过程，和反编译出来的结果差不多，但是多了很多标识，创建管道的话应该需要指定管道名称，这里推测<code>SecurityAttributes</code>应该就是之前拼接而成的管道名称。</p>
+<p>文件的写入应该是一个循环写入，v5&gt;0就是判断条件，应该是字符长度，看v5参数传递过程，就是函数传入的第三个参数a3，即<code>dword_404004</code>，大小是0x3FA00，写入内容就是从<code>unk_404010</code>开始的字符，这些字符都是不可读的，应该经过了加密。这里没有看的太详细，直接推测0x3FA00时shellcode大小，<code>unk_404010</code>开始就是加密后的shellcode，后续再求证。</p>
+<p><img src="/2021/05/28/CS4-0%E6%9C%A8%E9%A9%AC%E9%80%86%E5%90%91%E5%88%86%E6%9E%90/9.png"></p>
+<p>完成文件的写之后，再回到创建线程的函数<code>sub_401755</code>中，该函数最后返回的是<code>sub_401702</code>函数。该函数先malloc了一个内存，之后进入休眠，休眠1024ms，然后进入<code>sub_401662</code>函数，这个地方是循环执行Sleep、<code>sub_401662</code>函数，基本逻辑就是监听管道，如果创建成功，就进行连接。</p>
+<p><img src="/2021/05/28/CS4-0%E6%9C%A8%E9%A9%AC%E9%80%86%E5%90%91%E5%88%86%E6%9E%90/10.png"></p>
+<p>接下来关注<code>sub_401662</code>函数，里面是创建文件和读取文件的操作。这里用<code>CreateFileA</code>打开管道，这里都比较直观，之后的<code>ReadFile</code>又是一个循环读文件的操作。这里就是把先前的shellcode从管道里面读出来。    </p>
+<p><img src="/2021/05/28/CS4-0%E6%9C%A8%E9%A9%AC%E9%80%86%E5%90%91%E5%88%86%E6%9E%90/11.png"></p>
+<p>当函数完成管道内容的读之后，调用<code>sub_4014F3</code>函数，改函数主要完成两个功能，一个是异或解密，一个是创建新线程。</p>
+<p><img src="/2021/05/28/CS4-0%E6%9C%A8%E9%A9%AC%E9%80%86%E5%90%91%E5%88%86%E6%9E%90/12.png"></p>
+<p>具体看异或的过程，反编译出来的代码也很直接，原始需要解密的内容shellcode和一个解密数组异或，就得到解密后的shellcode，这里通过模3来看，解密数组的长度应该为3，这个地方没办法定位到具体的解密数组，没有其他信息，但是之前在分析的时候，在<code>dword_404004</code>和<code>unk_404010</code>中间有一个很短的数组<code>unk_404008</code>，<code>unk_404008</code>的前三个字节应该就是用来解密的字节。</p>
+<p><img src="/2021/05/28/CS4-0%E6%9C%A8%E9%A9%AC%E9%80%86%E5%90%91%E5%88%86%E6%9E%90/13.png"></p>
+<p>之后一步一步返回到main函数，下一步是想通过动态调试来dump解密的shellcode。</p>
+<h3 id="动态调试"><a href="#动态调试" class="headerlink" title="动态调试"></a>动态调试</h3><p>这里使用x64dbg来对程序进行分析。这里先在<code>sub_401755</code>里面拼接字符串的地方下了断点，想核对一下拼接结果（其实是想截图糊报告），可以看到和静态分析中一样，<code>GetTickCount</code>获取系统时间之后，随机数计算结果为5505，拼接管道名为<code>\\.\pipe\MSSE-5505-server</code>，不过x64dbg显示的时候对\进行了转义。</p>
+<p><img src="/2021/05/28/CS4-0%E6%9C%A8%E9%A9%AC%E9%80%86%E5%90%91%E5%88%86%E6%9E%90/14.png"></p>
+<p>之后关注异或解密的地方，因为想通过动态调试dump解密后的shellcode。解密函数辨识度还是挺高的，就是异或操作。</p>
+<p><img src="/2021/05/28/CS4-0%E6%9C%A8%E9%A9%AC%E9%80%86%E5%90%91%E5%88%86%E6%9E%90/15.png"></p>
+<p>在异或解密的地方看了几轮，关注用于异或解密的数组，长度应该为4，[‘5D’,’CC’,’E1’,’31’]，是之前提到的<code>unk_404008</code>的前四位。</p>
+<p>但是之前反编译结果是模3，我就很迷，仔细看一下汇编代码，并没有shr或者idiv、div一类的指令，也不太像编译器优化后的结果。</p>
+<p><img src="/2021/05/28/CS4-0%E6%9C%A8%E9%A9%AC%E9%80%86%E5%90%91%E5%88%86%E6%9E%90/16.png"></p>
+<p>这里想要获取解密后的Shellcode，把它dump出来，首先在<code>VirtualProtect</code>的地方下断点(这个思路是参考了一篇博客)，这里结合ida反编译的代码来看，v9是<code>VirtualAlloc</code>出来的一片内存空间，用来存放解密后的shellcode，<code>VirtualProtect</code>中的v9是第四个参数，对应的是rbx寄存器。</p>
+<p><img src="/2021/05/28/CS4-0%E6%9C%A8%E9%A9%AC%E9%80%86%E5%90%91%E5%88%86%E6%9E%90/17.png"></p>
+<p>运行到<code>VirtualProtect</code>之后，查看rbx，对应地址是190000，点击右键-&gt;在内存窗口中转到，就可以看见解密出来的结果了，开头就是4D5A，典型的PE文件，大小是以前静态分析的时候看到的<code>dword_404004</code>，大小为3FA00h，直接把从0x190000到0x1CFA00的内容dump出来另存为shellcode.bin文件，这个文件中就是Cobalt Strike实现主要功能的部分。</p>
+<p><img src="/2021/05/28/CS4-0%E6%9C%A8%E9%A9%AC%E9%80%86%E5%90%91%E5%88%86%E6%9E%90/18.png"></p>
+<p>后续对shellcode.bin文件进行分析，这个文件比较大256k，先用PEID看一下文件信息。是一个64位的PE文件，同时关注了一下文件的导入表，wininet主要是windows中网络相关模块dll文件，这里就应该是网络通信相关的一些协议。除此之外，kennel32里面也有一些文件操作相关的函数。</p>
+<h4 id="Shellcode分析"><a href="#Shellcode分析" class="headerlink" title="Shellcode分析"></a>Shellcode分析</h4><p>使用ida静态分析，发现整个程序比较大，函数也比较多，先看一下DLLMain函数，发现里面有一个<code>fdwReason</code>参数，只有<code>fdwReason</code>为4的时候，会进行一些恶意操作。</p>
+<p><img src="/2021/05/28/CS4-0%E6%9C%A8%E9%A9%AC%E9%80%86%E5%90%91%E5%88%86%E6%9E%90/19.png"></p>
+<p>因为函数非常多，不太好直接分析，所以选择从<code>InternetOpenA</code>函数入手，该函数是调用WinINet的第一个函数。查看一下函数的引用，在<code>sub_18000D858</code>中被调用。</p>
+<p><img src="/2021/05/28/CS4-0%E6%9C%A8%E9%A9%AC%E9%80%86%E5%90%91%E5%88%86%E6%9E%90/20.png"></p>
+<p>查看一下反编译的<code>sub_18000D858</code>函数，通过传入的参数名称和函数内部调用的一些函数都可以发现，该函数就是进行网络连接的函数。</p>
+<p><img src="/2021/05/28/CS4-0%E6%9C%A8%E9%A9%AC%E9%80%86%E5%90%91%E5%88%86%E6%9E%90/21.png"></p>
+<p>再一层一层向外跳，看一看该函数的调用具体情况。调用逻辑如下：</p>
+<p><code>DLLMain-&gt;sub_18000CA74-&gt; sub_18000D858</code></p>
+<p>这里还用了一个修复DLL文件的插件，<a target="_blank" rel="noopener" href="https://github.com/WBGlIl/ReflectiveDLL_Patch">下载地址</a></p>
+<p>想通过动态调试看看连接到服务器的过程（没错依旧是为了截图糊报告），但是调着调着调不动了，报告DDL也要到了，我真的不太会动态调试，虽然很久没做题了，我真的会找几个题目练练手的我保证。</p>
+<p>还有感谢教我动态调试的同学，估计被我气的够呛，然后友链也没做出来，下个月一定弄上。</p>
+<h3 id="参考博客"><a href="#参考博客" class="headerlink" title="参考博客"></a>参考博客</h3><p>[1]<a target="_blank" rel="noopener" href="https://blog.nviso.eu/2021/04/26/anatomy-of-cobalt-strike-dll-stagers/">https://blog.nviso.eu/2021/04/26/anatomy-of-cobalt-strike-dll-stagers/</a></p>
+<p>这是一篇国外的分析CS的DLL Stager的博客，比较详细，原理细节都讲的很清楚，而且代码反汇编结果和我的样本反汇编结果很像，可惜没有shellcode的分析。</p>
+<p>[2]<a target="_blank" rel="noopener" href="https://bbs.pediy.com/thread-264470.htm">https://bbs.pediy.com/thread-264470.htm</a></p>
+<p>看雪上面的一篇分析博客，很详细，还有shellcode的调试过程，但是我跟着调硬是不太一样。</p>
+<p>[3]<a target="_blank" rel="noopener" href="https://mp.weixin.qq.com/s/iTzZGKkXK48NR8YT1OTw_Q">https://mp.weixin.qq.com/s/iTzZGKkXK48NR8YT1OTw_Q</a></p>
+<p>这一篇后面的特征分析写的很有参考价值。</p>
+<p>[4]<a target="_blank" rel="noopener" href="https://blog.csdn.net/JiangBuLiu/article/details/107788203">https://blog.csdn.net/JiangBuLiu/article/details/107788203</a></p>
+<p>动态调试就是参考的这一篇，里面在VirtualProtect下断点的思路就是从这篇看的。</p>
+<p>[5]<a target="_blank" rel="noopener" href="https://blog.csdn.net/LoopherBear/article/details/106230996">https://blog.csdn.net/LoopherBear/article/details/106230996</a></p>
+<p>这一篇主要是分析shellcode部分，因为我没怎么分析后面就没细看。</p>
+<p>[6]<a target="_blank" rel="noopener" href="https://www.anquanke.com/post/id/237127">https://www.anquanke.com/post/id/237127</a></p>
+<p>印象有点模糊了。</p>
+<p>所以，我是，为什么，看了，这么多，博客，还，分析了，那么，久……</p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/%E6%81%B6%E6%84%8F%E4%BB%A3%E7%A0%81%E5%88%86%E6%9E%90/" rel="tag"># 恶意代码分析</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2021/05/28/D-Link-%E8%B7%AF%E7%94%B1%E5%99%A8%E5%9B%BA%E4%BB%B6%E8%A7%A3%E5%AF%86/" rel="prev" title="D-Link 路由器固件解密">
+      <i class="fa fa-chevron-left"></i> D-Link 路由器固件解密
+    </a></div>
+      <div class="post-nav-item"></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+    <div class="comments" id="valine-comments"></div>
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E9%9D%99%E6%80%81%E5%88%86%E6%9E%90"><span class="nav-number">1.</span> <span class="nav-text">静态分析</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%8A%A8%E6%80%81%E8%B0%83%E8%AF%95"><span class="nav-number">2.</span> <span class="nav-text">动态调试</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#Shellcode%E5%88%86%E6%9E%90"><span class="nav-number">2.1.</span> <span class="nav-text">Shellcode分析</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%8F%82%E8%80%83%E5%8D%9A%E5%AE%A2"><span class="nav-number">3.</span> <span class="nav-text">参考博客</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">yjy123</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">16</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-tags">
+        <span class="site-state-item-count">12</span>
+        <span class="site-state-item-name">tags</span>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/yjy123123" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;yjy123123" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:674943053@qq.com" title="E-Mail → mailto:674943053@qq.com" rel="noopener" target="_blank"><i class="fa fa-envelope fa-fw"></i>E-Mail</a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">yjy123</span>
+</div>
+  <div class="powered-by">Powered by <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://muse.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a>
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+
+<script>
+NexT.utils.loadComments(document.querySelector('#valine-comments'), () => {
+  NexT.utils.getScript('https://cdn.jsdelivr.net/npm/valine@1.4.14/dist/Valine.min.js', () => {
+    var GUEST = ['nick', 'mail', 'link'];
+    var guest = 'nick,mail,link';
+    guest = guest.split(',').filter(item => {
+      return GUEST.includes(item);
+    });
+    new Valine({
+      el         : '#valine-comments',
+      verify     : false,
+      notify     : false,
+      appId      : 'zB1H0PKzDpjxuuiBc2N34Cns-gzGzoHsz',
+      appKey     : 'HBLQQLpG46wIWMhTv8jWvCu9',
+      placeholder: "Just go go",
+      avatar     : 'mm',
+      meta       : guest,
+      pageSize   : '10' || 10,
+      visitor    : true,
+      lang       : '' || 'zh-cn',
+      path       : location.pathname,
+      recordIP   : false,
+      serverURLs : ''
+    });
+  }, window.Valine);
+});
+</script>
+
+</body>
+</html>

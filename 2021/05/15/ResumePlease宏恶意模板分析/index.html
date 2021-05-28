@@ -27,11 +27,13 @@
 <meta property="og:site_name" content="yjy&#39;s Blog">
 <meta property="og:description" content="简单的分析一下Fireeye之前泄漏的红队工具里面的ResumePlease。 注意，我说的简单分析真的是简单分析，并没有谦虚的意思。">
 <meta property="og:locale" content="en_US">
+<meta property="og:image" content="http://example.com/2021/05/15/ResumePlease%E5%AE%8F%E6%81%B6%E6%84%8F%E6%A8%A1%E6%9D%BF%E5%88%86%E6%9E%90/1.png">
 <meta property="article:published_time" content="2021-05-15T02:32:58.000Z">
-<meta property="article:modified_time" content="2021-05-15T05:53:06.742Z">
+<meta property="article:modified_time" content="2021-05-18T12:07:53.118Z">
 <meta property="article:author" content="yjy123">
 <meta property="article:tag" content="恶意代码">
 <meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://example.com/2021/05/15/ResumePlease%E5%AE%8F%E6%81%B6%E6%84%8F%E6%A8%A1%E6%9D%BF%E5%88%86%E6%9E%90/1.png">
 
 <link rel="canonical" href="http://example.com/2021/05/15/ResumePlease%E5%AE%8F%E6%81%B6%E6%84%8F%E6%A8%A1%E6%9D%BF%E5%88%86%E6%9E%90/">
 
@@ -173,10 +175,16 @@
                 <i class="far fa-calendar"></i>
               </span>
               <span class="post-meta-item-text">Posted on</span>
-              
 
-              <time title="Created: 2021-05-15 10:32:58 / Modified: 13:53:06" itemprop="dateCreated datePublished" datetime="2021-05-15T10:32:58+08:00">2021-05-15</time>
+              <time title="Created: 2021-05-15 10:32:58" itemprop="dateCreated datePublished" datetime="2021-05-15T10:32:58+08:00">2021-05-15</time>
             </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2021-05-18 20:07:53" itemprop="dateModified" datetime="2021-05-18T20:07:53+08:00">2021-05-18</time>
+              </span>
 
           
             <span id="/2021/05/15/ResumePlease%E5%AE%8F%E6%81%B6%E6%84%8F%E6%A8%A1%E6%9D%BF%E5%88%86%E6%9E%90/" class="post-meta-item leancloud_visitors" data-flag-title="ResumePlease宏恶意模板分析" title="Views">
@@ -249,6 +257,14 @@
 <p>这个文件只是一个模板，没有办法运行，本来想找一个相关的payload，但是搞完这个展示就懒了，不知道啥时候还会想起来弄。</p>
 <p>还有就是不知道为什么安天分析报告里面强调是excel文件，感觉代码里面并没有体现这一点。</p>
 <p>月底估计还有一个样本分析相关的博客。</p>
+<hr>
+<p>5.18补充</p>
+<p>看了中国大学mooc里面的《软件安全之恶意代码机理与防护》，C7脚本病毒及宏病毒里面就讲了相关内容。</p>
+<p>（1）一个是宏病毒感染机理：存在于数据文件或模板中，利用宏语言的功能将自己寄生到其他数据文档。</p>
+<p>（2）其次是一些会自动执行的宏，Document_Open()就是一个自动执行的宏，有机会执行恶意行为，</p>
+<p><img src="/2021/05/15/ResumePlease%E5%AE%8F%E6%81%B6%E6%84%8F%E6%A8%A1%E6%9D%BF%E5%88%86%E6%9E%90/1.png"></p>
+<p>（3）拆分一次字符串，简单的混淆方法</p>
+<p><code>GetObject(&quot;wi&quot; &amp; &quot;nmgmt&quot; &amp; &quot;s:r&quot; &amp; &quot;oot\ci&quot; &amp; &quot;mv2:W&quot; &amp; &quot;in32_P&quot; &amp; &quot;rocess&quot;)</code> </p>
 
     </div>
 
@@ -347,12 +363,12 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">14</span>
+          <span class="site-state-item-count">16</span>
           <span class="site-state-item-name">posts</span>
         </a>
       </div>
       <div class="site-state-item site-state-tags">
-        <span class="site-state-item-count">10</span>
+        <span class="site-state-item-count">12</span>
         <span class="site-state-item-name">tags</span>
       </div>
   </nav>
