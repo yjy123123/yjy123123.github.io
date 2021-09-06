@@ -62,3 +62,35 @@ tags: Reverse
 
 IDA F5反编译，找到Congratulations附近的函数，应该就是关键需要逆向的函数了。
 
+
+
+
+
+### Shuffle1
+
+提示是“找到字符串在随机化之前”，用DIE查看一下文件，发现是ELF32位的文件。用IDA打开，F5反编译，把数字转成char就是flag。
+
+
+
+### Guess-the-Number
+
+发现是个jar包，之前没有逆向过jar包，搜了一下，发现直接用jar命令解压jar包。
+
+```
+jar -xvf filename.jar
+```
+
+直接解压出配置文件和guess.class，guess.class就是关键了。
+
+![](4.png)
+
+看main函数就可以知道，其实flag就是两个字符串异或。这里可以把文件改一改再运行，不过我找了一个在线运行java的网站跑的，非常方便。
+
+
+
+### EasyRE
+
+32位的pe文件，运行之后现实"input"，输入不对直接退出。IDA看一下感觉还比较复杂。
+
+
+
