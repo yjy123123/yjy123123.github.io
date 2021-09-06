@@ -30,8 +30,9 @@
 <meta property="og:image" content="http://example.com/2021/04/10/XCTF%E9%80%86%E5%90%91%E8%BF%9B%E9%98%B6%E5%8C%BAWriteup%E5%90%88%E9%9B%86/1.png">
 <meta property="og:image" content="http://example.com/2021/04/10/XCTF%E9%80%86%E5%90%91%E8%BF%9B%E9%98%B6%E5%8C%BAWriteup%E5%90%88%E9%9B%86/2.png">
 <meta property="og:image" content="http://example.com/2021/04/10/XCTF%E9%80%86%E5%90%91%E8%BF%9B%E9%98%B6%E5%8C%BAWriteup%E5%90%88%E9%9B%86/3.png">
+<meta property="og:image" content="http://example.com/2021/04/10/XCTF%E9%80%86%E5%90%91%E8%BF%9B%E9%98%B6%E5%8C%BAWriteup%E5%90%88%E9%9B%86/4.png">
 <meta property="article:published_time" content="2021-04-10T11:16:31.000Z">
-<meta property="article:modified_time" content="2021-04-20T12:00:03.129Z">
+<meta property="article:modified_time" content="2021-06-25T11:57:07.067Z">
 <meta property="article:author" content="yjy123">
 <meta property="article:tag" content="Reverse">
 <meta name="twitter:card" content="summary">
@@ -185,7 +186,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">Edited on</span>
-                <time title="Modified: 2021-04-20 20:00:03" itemprop="dateModified" datetime="2021-04-20T20:00:03+08:00">2021-04-20</time>
+                <time title="Modified: 2021-06-25 19:57:07" itemprop="dateModified" datetime="2021-06-25T19:57:07+08:00">2021-06-25</time>
               </span>
 
           
@@ -245,6 +246,13 @@
 <p>这里还有一点就是i++和++i，虽然很久不用C了，但是还是记得的，所以解出来的字符串首字母是缺失的，但是我猜到了，就懒得看其他获得首字母的方法惹。</p>
 <h3 id="IgniteMe"><a href="#IgniteMe" class="headerlink" title="IgniteMe"></a>IgniteMe</h3><p>有了Maze的教训之后，我都会先查一查不认识的单词，Ignite是点燃的意思，运行了一下，oh，又是老土的输入flag。</p>
 <p>IDA F5反编译，找到Congratulations附近的函数，应该就是关键需要逆向的函数了。</p>
+<h3 id="Shuffle1"><a href="#Shuffle1" class="headerlink" title="Shuffle1"></a>Shuffle1</h3><p>提示是“找到字符串在随机化之前”，用DIE查看一下文件，发现是ELF32位的文件。用IDA打开，F5反编译，把数字转成char就是flag。</p>
+<h3 id="Guess-the-Number"><a href="#Guess-the-Number" class="headerlink" title="Guess-the-Number"></a>Guess-the-Number</h3><p>发现是个jar包，之前没有逆向过jar包，搜了一下，发现直接用jar命令解压jar包。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">jar -xvf filename.jar</span><br></pre></td></tr></table></figure>
+<p>直接解压出配置文件和guess.class，guess.class就是关键了。</p>
+<p><img src="/2021/04/10/XCTF%E9%80%86%E5%90%91%E8%BF%9B%E9%98%B6%E5%8C%BAWriteup%E5%90%88%E9%9B%86/4.png"></p>
+<p>看main函数就可以知道，其实flag就是两个字符串异或。这里可以把文件改一改再运行，不过我找了一个在线运行java的网站跑的，非常方便。</p>
+<h3 id="EasyRE"><a href="#EasyRE" class="headerlink" title="EasyRE"></a>EasyRE</h3><p>32位的pe文件，运行之后现实”input”，输入不对直接退出。IDA看一下感觉还比较复杂。</p>
 
     </div>
 
@@ -329,7 +337,7 @@
 
       <!--noindex-->
       <div class="post-toc-wrap sidebar-panel">
-          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#Mysterious"><span class="nav-number">1.</span> <span class="nav-text">Mysterious</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Reversing-x64Elf-100"><span class="nav-number">2.</span> <span class="nav-text">Reversing-x64Elf-100</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#IgniteMe"><span class="nav-number">3.</span> <span class="nav-text">IgniteMe</span></a></li></ol></div>
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#Mysterious"><span class="nav-number">1.</span> <span class="nav-text">Mysterious</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Reversing-x64Elf-100"><span class="nav-number">2.</span> <span class="nav-text">Reversing-x64Elf-100</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#IgniteMe"><span class="nav-number">3.</span> <span class="nav-text">IgniteMe</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Shuffle1"><span class="nav-number">4.</span> <span class="nav-text">Shuffle1</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Guess-the-Number"><span class="nav-number">5.</span> <span class="nav-text">Guess-the-Number</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#EasyRE"><span class="nav-number">6.</span> <span class="nav-text">EasyRE</span></a></li></ol></div>
       </div>
       <!--/noindex-->
 
@@ -343,12 +351,12 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">16</span>
+          <span class="site-state-item-count">17</span>
           <span class="site-state-item-name">posts</span>
         </a>
       </div>
       <div class="site-state-item site-state-tags">
-        <span class="site-state-item-count">12</span>
+        <span class="site-state-item-count">13</span>
         <span class="site-state-item-name">tags</span>
       </div>
   </nav>

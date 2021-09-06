@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.3.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"example.com","root":"/","scheme":"Muse","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="因为项目原因需要比对两个BMC固件之间的差别，所以用了一下BinDiff和Diaphora两个二进制比对的工具，做一个简单的记录。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="二进制比对工具使用记录">
+<meta property="og:url" content="http://example.com/2021/09/06/%E4%BA%8C%E8%BF%9B%E5%88%B6%E6%AF%94%E5%AF%B9%E5%B7%A5%E5%85%B7%E4%BD%BF%E7%94%A8%E8%AE%B0%E5%BD%95/index.html">
+<meta property="og:site_name" content="yjy&#39;s Blog">
+<meta property="og:description" content="因为项目原因需要比对两个BMC固件之间的差别，所以用了一下BinDiff和Diaphora两个二进制比对的工具，做一个简单的记录。">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="http://example.com/2021/09/06/%E4%BA%8C%E8%BF%9B%E5%88%B6%E6%AF%94%E5%AF%B9%E5%B7%A5%E5%85%B7%E4%BD%BF%E7%94%A8%E8%AE%B0%E5%BD%95/1.png">
+<meta property="og:image" content="http://example.com/2021/09/06/%E4%BA%8C%E8%BF%9B%E5%88%B6%E6%AF%94%E5%AF%B9%E5%B7%A5%E5%85%B7%E4%BD%BF%E7%94%A8%E8%AE%B0%E5%BD%95/2.png">
+<meta property="og:image" content="http://example.com/2021/09/06/%E4%BA%8C%E8%BF%9B%E5%88%B6%E6%AF%94%E5%AF%B9%E5%B7%A5%E5%85%B7%E4%BD%BF%E7%94%A8%E8%AE%B0%E5%BD%95/3.png">
+<meta property="og:image" content="http://example.com/2021/09/06/%E4%BA%8C%E8%BF%9B%E5%88%B6%E6%AF%94%E5%AF%B9%E5%B7%A5%E5%85%B7%E4%BD%BF%E7%94%A8%E8%AE%B0%E5%BD%95/4.png">
+<meta property="og:image" content="http://example.com/2021/09/06/%E4%BA%8C%E8%BF%9B%E5%88%B6%E6%AF%94%E5%AF%B9%E5%B7%A5%E5%85%B7%E4%BD%BF%E7%94%A8%E8%AE%B0%E5%BD%95/5.png">
+<meta property="article:published_time" content="2021-09-06T07:32:51.000Z">
+<meta property="article:modified_time" content="2021-09-06T13:16:02.648Z">
+<meta property="article:author" content="yjy123">
+<meta property="article:tag" content="二进制">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://example.com/2021/09/06/%E4%BA%8C%E8%BF%9B%E5%88%B6%E6%AF%94%E5%AF%B9%E5%B7%A5%E5%85%B7%E4%BD%BF%E7%94%A8%E8%AE%B0%E5%BD%95/1.png">
+
+<link rel="canonical" href="http://example.com/2021/09/06/%E4%BA%8C%E8%BF%9B%E5%88%B6%E6%AF%94%E5%AF%B9%E5%B7%A5%E5%85%B7%E4%BD%BF%E7%94%A8%E8%AE%B0%E5%BD%95/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'en'
+  };
+</script>
+
+  <title>二进制比对工具使用记录 | yjy's Blog</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">yjy's Blog</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>Home</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>Archives</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
+    <link itemprop="mainEntityOfPage" href="http://example.com/2021/09/06/%E4%BA%8C%E8%BF%9B%E5%88%B6%E6%AF%94%E5%AF%B9%E5%B7%A5%E5%85%B7%E4%BD%BF%E7%94%A8%E8%AE%B0%E5%BD%95/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="yjy123">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="yjy's Blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          二进制比对工具使用记录
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+              
+
+              <time title="Created: 2021-09-06 15:32:51 / Modified: 21:16:02" itemprop="dateCreated datePublished" datetime="2021-09-06T15:32:51+08:00">2021-09-06</time>
+            </span>
+
+          
+            <span id="/2021/09/06/%E4%BA%8C%E8%BF%9B%E5%88%B6%E6%AF%94%E5%AF%B9%E5%B7%A5%E5%85%B7%E4%BD%BF%E7%94%A8%E8%AE%B0%E5%BD%95/" class="post-meta-item leancloud_visitors" data-flag-title="二进制比对工具使用记录" title="Views">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">Views: </span>
+              <span class="leancloud-visitors-count"></span>
+            </span>
+  
+  <span class="post-meta-item">
+    
+      <span class="post-meta-item-icon">
+        <i class="far fa-comment"></i>
+      </span>
+      <span class="post-meta-item-text">Valine: </span>
+    
+    <a title="valine" href="/2021/09/06/%E4%BA%8C%E8%BF%9B%E5%88%B6%E6%AF%94%E5%AF%B9%E5%B7%A5%E5%85%B7%E4%BD%BF%E7%94%A8%E8%AE%B0%E5%BD%95/#valine-comments" itemprop="discussionUrl">
+      <span class="post-comments-count valine-comment-count" data-xid="/2021/09/06/%E4%BA%8C%E8%BF%9B%E5%88%B6%E6%AF%94%E5%AF%B9%E5%B7%A5%E5%85%B7%E4%BD%BF%E7%94%A8%E8%AE%B0%E5%BD%95/" itemprop="commentCount"></span>
+    </a>
+  </span>
+  
+  
+            <div class="post-description">因为项目原因需要比对两个BMC固件之间的差别，所以用了一下BinDiff和Diaphora两个二进制比对的工具，做一个简单的记录。</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>看了一下居然已经三个月没写博客了，虽然除了本人无人在意，但是还是应该狠狠谴责自己，这篇博客其实六、七月份就应该写了，一直懒得写。这几天开学了，也不懂为什么都这个年纪了还会因为开学难过，烦死了，新学期准备开始写博客，一方面是这两天没有特别要紧的事忙，另一方面是觉得需要总结一下这几个月做了什么，不然基本上白干。</p>
+<p>HPE服务器的BMC固件2021年发布了一系列的CVE漏洞，但是除了漏洞描述之外没有其他的信息，不过漏洞描述里面比较详细的说了漏洞位置，例如CVE-2021-26577漏洞描述如下。</p>
+<blockquote>
+<p>The Baseboard Management Controller (BMC) firmware in HPE Apollo 70 System prior to version 3.0.14.0 has a local buffer overflow in libifc.so uploadsshkey function.</p>
+</blockquote>
+<p>并且HPE官方提供固件下载，所以通过下载漏洞修复前后的固件，用ida逆向，再比对函数的差别，可以对漏洞进行简单的分析。如果手工完成比对的话，函数小还可以实现，但是如果是比较大的函数的话还是挺麻烦的，所以想通过自动化工具来快速定位函数修改的地方，找到漏洞点。</p>
+<p>这里选择了BinDiff和Diaphora两种工具，两个工具都是免费的，如果要开源版的话可以看看BinNavi（不太清楚两者之间的区别，感觉好像差不多），接下来简单记录一下使用过程。</p>
+<h3 id="BinDiff"><a href="#BinDiff" class="headerlink" title="BinDiff"></a>BinDiff</h3><p><a target="_blank" rel="noopener" href="https://zynamics.com/bindiff.html">BinDiff</a>这个工具之前在软件安全课上经常听到老师提，主要是名字取得挺好的，一看就知道干什么的，好记也好写。官网对BinDiff的介绍就是快速定位程序中打的补丁，后续分析是在反汇编代码中进行。</p>
+<p>官网直接提供了安装包，下载地址：<a target="_blank" rel="noopener" href="https://zynamics.com/software.html">https://zynamics.com/software.html</a>。</p>
+<h4 id="第一个坑"><a href="#第一个坑" class="headerlink" title="第一个坑"></a>第一个坑</h4><p>BinDiff版本比较多，适配的IDA版本也不一样，这是第一个坑，我直接下载了BinDiff 7 发现无法支持，但是卸载重新安装BinDiff 5发现版本还是没有回退，一般这种都是因为日志之类的没有卸载干净，找了一下发现果然有这种问题，参考的<a target="_blank" rel="noopener" href="https://o0xmuhe.github.io/2019/08/22/Bindiff5-0-Could-not-create-file-handler-fix/">这篇博客</a>。</p>
+<p><a target="_blank" rel="noopener" href="https://www.zynamics.com/bindiff/manual/index.html">BinDiff  Manual</a>里面有提到各个版本匹配的IDA，根据自己的IDA版本选择安装包下载。Mac上总是不成功，我最后在Windows上用IDA7.5 + BinDiff 7。</p>
+<h4 id="第二个坑"><a href="#第二个坑" class="headerlink" title="第二个坑"></a>第二个坑</h4><p>因为时间过的有点久，所以只能看备忘录里面零散的记载，似乎出现了BinDiff error: “Can’t start disassembler. Please set correct path in the main settings first”的问题，但是解决该问题的链接失效了，搜了一下，是因为BinDiff默认的ida目录不对导致的，<a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/129292196">这篇博客</a>中包含解决方案，但是不知道能不能成功。</p>
+<h4 id="使用过程"><a href="#使用过程" class="headerlink" title="使用过程"></a>使用过程</h4><p>新建Workspace-&gt;New Diff ，这里需要注意的是Diff的文件是ida数据库文件，选择i64或者idb文件进行Diff。</p>
+<p>在Functions中找到对应的函数，双击之后可以看到两个函数具体的对比，BinDiff是基于控制流程图的比较，通过下图不同的底色可以快速定位存在区别的块。可以发现1.09.0版本（左边）里面多了一个strncpy的操作，strncpy()会将字符串src前n个字符拷贝到字符串dest。通过把strncpy函数把字符串长度限制在0x10以内，从而避免缓冲区溢出。</p>
+<p><img src="/2021/09/06/%E4%BA%8C%E8%BF%9B%E5%88%B6%E6%AF%94%E5%AF%B9%E5%B7%A5%E5%85%B7%E4%BD%BF%E7%94%A8%E8%AE%B0%E5%BD%95/1.png"></p>
+<p><img src="/2021/09/06/%E4%BA%8C%E8%BF%9B%E5%88%B6%E6%AF%94%E5%AF%B9%E5%B7%A5%E5%85%B7%E4%BD%BF%E7%94%A8%E8%AE%B0%E5%BD%95/2.png"></p>
+<p>BinDiff可以以ida插件的形式使用，这里并不需要额外的安装插件。但是如果想要查看具体比对内容的话，还是需要在bindiff中查看，因为插件把结果传到BinDiff的GUI中显示。</p>
+<p><img src="/2021/09/06/%E4%BA%8C%E8%BF%9B%E5%88%B6%E6%AF%94%E5%AF%B9%E5%B7%A5%E5%85%B7%E4%BD%BF%E7%94%A8%E8%AE%B0%E5%BD%95/3.png"></p>
+<h4 id=""><a href="#" class="headerlink" title=""></a></h4><h3 id="Diaphora"><a href="#Diaphora" class="headerlink" title="Diaphora"></a>Diaphora</h3><p>diaphora是ida中二进制比对的插件，在<a target="_blank" rel="noopener" href="https://github.com/joxeankoret/diaphora">GitHub中开源</a>，关于python2和python3的选择可以根据自己的ida版本来看。</p>
+<h4 id="导出sqlite文件"><a href="#导出sqlite文件" class="headerlink" title="导出sqlite文件"></a>导出sqlite文件</h4><p>File-&gt;script file-&gt; diaphora.py即可使用diaphora。</p>
+<p>不过在使用之前需要将idb文件导入成sqlite文件，所以最开始比对时需要将两个文件转换成sqlite文件，方法也很简单，直接File-&gt;script file-&gt; diaphora.py-&gt;confirm，就可以将ida database文件导出为sqlite文件，这一步可能会等的比较久。</p>
+<h4 id="使用过程-1"><a href="#使用过程-1" class="headerlink" title="使用过程"></a>使用过程</h4><p>之后Diff过程只要选择需要比对的两个sqllite文件即可。diaphora会根据匹配度把函数分成Partial matches，best matches和unmatched，diaphora支持比对的形式更多，包括为代码的比对。</p>
+<p><img src="/2021/09/06/%E4%BA%8C%E8%BF%9B%E5%88%B6%E6%AF%94%E5%AF%B9%E5%B7%A5%E5%85%B7%E4%BD%BF%E7%94%A8%E8%AE%B0%E5%BD%95/4.png"></p>
+<p>这里左边的为1.08.0版本，漏洞修复前。</p>
+<p><img src="/2021/09/06/%E4%BA%8C%E8%BF%9B%E5%88%B6%E6%AF%94%E5%AF%B9%E5%B7%A5%E5%85%B7%E4%BD%BF%E7%94%A8%E8%AE%B0%E5%BD%95/5.png"></p>
+<h3 id="小结"><a href="#小结" class="headerlink" title="小结"></a>小结</h3><p>diaphora的版本适配更简单一点，而且Mac上使用方便，还支持反编译结果的比对，BinDiff有的功能它基本上也有，感觉会更友好一点。</p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/%E4%BA%8C%E8%BF%9B%E5%88%B6/" rel="tag"># 二进制</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2021/05/28/CS4-0%E6%9C%A8%E9%A9%AC%E9%80%86%E5%90%91%E5%88%86%E6%9E%90/" rel="prev" title="CS4.0木马逆向分析">
+      <i class="fa fa-chevron-left"></i> CS4.0木马逆向分析
+    </a></div>
+      <div class="post-nav-item"></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+    <div class="comments" id="valine-comments"></div>
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#BinDiff"><span class="nav-number">1.</span> <span class="nav-text">BinDiff</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E7%AC%AC%E4%B8%80%E4%B8%AA%E5%9D%91"><span class="nav-number">1.1.</span> <span class="nav-text">第一个坑</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E7%AC%AC%E4%BA%8C%E4%B8%AA%E5%9D%91"><span class="nav-number">1.2.</span> <span class="nav-text">第二个坑</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E4%BD%BF%E7%94%A8%E8%BF%87%E7%A8%8B"><span class="nav-number">1.3.</span> <span class="nav-text">使用过程</span></a></li><li class="nav-item nav-level-4"><a class="nav-link"><span class="nav-number">1.4.</span> <span class="nav-text"></span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Diaphora"><span class="nav-number">2.</span> <span class="nav-text">Diaphora</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%AF%BC%E5%87%BAsqlite%E6%96%87%E4%BB%B6"><span class="nav-number">2.1.</span> <span class="nav-text">导出sqlite文件</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E4%BD%BF%E7%94%A8%E8%BF%87%E7%A8%8B-1"><span class="nav-number">2.2.</span> <span class="nav-text">使用过程</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%B0%8F%E7%BB%93"><span class="nav-number">3.</span> <span class="nav-text">小结</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">yjy123</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">17</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-tags">
+        <span class="site-state-item-count">13</span>
+        <span class="site-state-item-name">tags</span>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/yjy123123" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;yjy123123" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:674943053@qq.com" title="E-Mail → mailto:674943053@qq.com" rel="noopener" target="_blank"><i class="fa fa-envelope fa-fw"></i>E-Mail</a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">yjy123</span>
+</div>
+  <div class="powered-by">Powered by <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://muse.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a>
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+
+<script>
+NexT.utils.loadComments(document.querySelector('#valine-comments'), () => {
+  NexT.utils.getScript('https://cdn.jsdelivr.net/npm/valine@1.4.14/dist/Valine.min.js', () => {
+    var GUEST = ['nick', 'mail', 'link'];
+    var guest = 'nick,mail,link';
+    guest = guest.split(',').filter(item => {
+      return GUEST.includes(item);
+    });
+    new Valine({
+      el         : '#valine-comments',
+      verify     : false,
+      notify     : false,
+      appId      : 'zB1H0PKzDpjxuuiBc2N34Cns-gzGzoHsz',
+      appKey     : 'HBLQQLpG46wIWMhTv8jWvCu9',
+      placeholder: "Just go go",
+      avatar     : 'mm',
+      meta       : guest,
+      pageSize   : '10' || 10,
+      visitor    : true,
+      lang       : '' || 'zh-cn',
+      path       : location.pathname,
+      recordIP   : false,
+      serverURLs : ''
+    });
+  }, window.Valine);
+});
+</script>
+
+</body>
+</html>
