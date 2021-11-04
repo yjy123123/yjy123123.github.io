@@ -1,0 +1,504 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.3.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"example.com","root":"/","scheme":"Muse","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="顺便记录一下Datacon邮件安全比赛的心路历程。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="浅谈邮件伪造技术">
+<meta property="og:url" content="http://example.com/2021/11/02/%E6%B5%85%E8%B0%88%E9%82%AE%E4%BB%B6%E4%BC%AA%E9%80%A0%E6%8A%80%E6%9C%AF/index.html">
+<meta property="og:site_name" content="yjy&#39;s Blog">
+<meta property="og:description" content="顺便记录一下Datacon邮件安全比赛的心路历程。">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="http://example.com/2021/11/02/%E6%B5%85%E8%B0%88%E9%82%AE%E4%BB%B6%E4%BC%AA%E9%80%A0%E6%8A%80%E6%9C%AF/1.png">
+<meta property="og:image" content="http://example.com/2021/11/02/%E6%B5%85%E8%B0%88%E9%82%AE%E4%BB%B6%E4%BC%AA%E9%80%A0%E6%8A%80%E6%9C%AF/2.png">
+<meta property="article:published_time" content="2021-11-02T12:16:36.000Z">
+<meta property="article:modified_time" content="2021-11-04T09:17:44.579Z">
+<meta property="article:author" content="yjy123">
+<meta property="article:tag" content="邮件安全">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://example.com/2021/11/02/%E6%B5%85%E8%B0%88%E9%82%AE%E4%BB%B6%E4%BC%AA%E9%80%A0%E6%8A%80%E6%9C%AF/1.png">
+
+<link rel="canonical" href="http://example.com/2021/11/02/%E6%B5%85%E8%B0%88%E9%82%AE%E4%BB%B6%E4%BC%AA%E9%80%A0%E6%8A%80%E6%9C%AF/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'en'
+  };
+</script>
+
+  <title>浅谈邮件伪造技术 | yjy's Blog</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">yjy's Blog</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>Home</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>Archives</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
+    <link itemprop="mainEntityOfPage" href="http://example.com/2021/11/02/%E6%B5%85%E8%B0%88%E9%82%AE%E4%BB%B6%E4%BC%AA%E9%80%A0%E6%8A%80%E6%9C%AF/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="yjy123">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="yjy's Blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          浅谈邮件伪造技术
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2021-11-02 20:16:36" itemprop="dateCreated datePublished" datetime="2021-11-02T20:16:36+08:00">2021-11-02</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2021-11-04 17:17:44" itemprop="dateModified" datetime="2021-11-04T17:17:44+08:00">2021-11-04</time>
+              </span>
+
+          
+            <span id="/2021/11/02/%E6%B5%85%E8%B0%88%E9%82%AE%E4%BB%B6%E4%BC%AA%E9%80%A0%E6%8A%80%E6%9C%AF/" class="post-meta-item leancloud_visitors" data-flag-title="浅谈邮件伪造技术" title="Views">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">Views: </span>
+              <span class="leancloud-visitors-count"></span>
+            </span>
+  
+  <span class="post-meta-item">
+    
+      <span class="post-meta-item-icon">
+        <i class="far fa-comment"></i>
+      </span>
+      <span class="post-meta-item-text">Valine: </span>
+    
+    <a title="valine" href="/2021/11/02/%E6%B5%85%E8%B0%88%E9%82%AE%E4%BB%B6%E4%BC%AA%E9%80%A0%E6%8A%80%E6%9C%AF/#valine-comments" itemprop="discussionUrl">
+      <span class="post-comments-count valine-comment-count" data-xid="/2021/11/02/%E6%B5%85%E8%B0%88%E9%82%AE%E4%BB%B6%E4%BC%AA%E9%80%A0%E6%8A%80%E6%9C%AF/" itemprop="commentCount"></span>
+    </a>
+  </span>
+  
+  
+            <div class="post-description">顺便记录一下Datacon邮件安全比赛的心路历程。</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>感觉十月份大部分时间都在干这一件事情，15天的比赛（关键是这之后还有7天realword），真的卷烂了，我没见过这么卷的场面，我中间一度差点看伪造邮件的东西看吐了。我只是个没有感情发垃圾邮件机器人，以及人肉Fuzz工具，真的连续发了半个月的垃圾邮件，所以自动化改变生活。</p>
+<p>淦，那种测试岗不会其实天天就是干这种事情吧，重复且没有技术含量。</p>
+<h3 id="参考文献"><a href="#参考文献" class="headerlink" title="参考文献"></a>参考文献</h3><p>这一部分是这次比赛主要看的一些资料，其实看完这些东西基本上就足够了。</p>
+<p>[1] Chen, Jianjun et al. “Composition Kills: A Case Study of Email Sender Authentication.” <em>USENIX Security Symposium</em> (2020).</p>
+<p><a target="_blank" rel="noopener" href="https://www.usenix.org/sites/default/files/composition-kills.pdf">论文链接</a></p>
+<p>这篇文章我觉得是目前讲邮件安全讲的最好的一篇，从邮件安全协议到如何攻击都讲的清清楚楚，明明白白，这也导致我对2021那篇还能中表示迷惑。</p>
+<p>[2] Shen, Kaiwen et al. “Weak Links in Authentication Chains: A Large-scale Analysis of Email Sender Spoofing Attacks.” <em>USENIX Security Symposium</em> (2021).</p>
+<p>这篇文章在前一篇基础上提了一点新的UI绕过方法，在From字段中插入一些字符串。</p>
+<p>[3] <a target="_blank" rel="noopener" href="https://www.anquanke.com/post/id/218889">邮件伪造组合拳</a></p>
+<p>我最喜欢的一篇参考文献，其实是依据2020年那篇论文写的，没办法我们碎片人就是只能看技术博客，不能看论文的。</p>
+<p>因为去年Coremail比赛的时候，看这篇博客比看论文还认真，所以第一题找伪造邮件没找全，还被评审说看论文不认真。</p>
+<p>[3] <a target="_blank" rel="noopener" href="https://github.com/jetmore/swaks">Swaks</a> </p>
+<p>这可是邮件系统测试的瑞士军刀！</p>
+<p>好的，弄懂参考文献你就掌握了核心技术，明年Datacon邮件安全前三没你我不信。</p>
+<h3 id="必要知识"><a href="#必要知识" class="headerlink" title="必要知识"></a>必要知识</h3><p>首先需要了的就是发邮件过程中的一些重要的字段和邮件安全策略。</p>
+<h4 id="邮件相关字段"><a href="#邮件相关字段" class="headerlink" title="邮件相关字段"></a>邮件相关字段</h4><h5 id="From"><a href="#From" class="headerlink" title="From"></a>From</h5><p>由MUA(mail user agent)显示的发件人地址。</p>
+<h5 id="Mail-From"><a href="#Mail-From" class="headerlink" title="Mail From"></a>Mail From</h5><p>SMTP认证中的发件人，并指定在传送邮件过程中出现任何问题（例如未送达通知）时发送返回通知的地址，该地址通常不显示。</p>
+<h5 id="Sender"><a href="#Sender" class="headerlink" title="Sender"></a>Sender</h5><p>用于在“From”中有多个地址时标识真正的发件人。</p>
+<p>这里可以简单将Mail From理解为信封外填写的发件人，From是信中填写的发件人。</p>
+<h4 id="安全协议"><a href="#安全协议" class="headerlink" title="安全协议"></a>安全协议</h4><h5 id="SPF-Sender-Policy-Framework"><a href="#SPF-Sender-Policy-Framework" class="headerlink" title="SPF(Sender Policy Framework)"></a>SPF(Sender Policy Framework)</h5><p>SPF 记录是一个 DNS 记录，通过验证发出电子邮件的域的域名，帮助阻止欺骗和钓鱼。SPF 根据发送域的可疑所有者来验证发件人的 IP 地址，从而验证电子邮件的来源。</p>
+<p>SPF主要对HELO和Mail From字段进行验证，其中HELO字段并非必需的字段，一般在Mail From为空的情况下，会使用HELO进行验证。</p>
+<h5 id="DKIM-DomainKeys-Identified-Mail"><a href="#DKIM-DomainKeys-Identified-Mail" class="headerlink" title="DKIM(DomainKeys Identified Mail)"></a>DKIM(DomainKeys Identified Mail)</h5><p>邮件发送方发送邮件时，利用本域私钥加密邮件生成DKIM-Signature，将DKIM-Signature及其相关信息插入邮件头。邮件接收方接收邮件时，通过DNS查询获得公钥，验证邮件DKIM签名的有效性。从而确认在邮件发送的过程中，防止邮件被恶意篡改，保证邮件内容的完整性。</p>
+<p>DKIM签名结构如下所示：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">DKIM-Signature: v&#x3D;1; a&#x3D;rsa-sha256; c&#x3D;relaxed&#x2F;simple; </span><br><span class="line">					d&#x3D;nospoofing.cn;  i&#x3D;@nospoofing.cn; l&#x3D;1805; q&#x3D;dns&#x2F;txt;</span><br><span class="line">             s&#x3D;20210923; t&#x3D;1633945884; h&#x3D;from  : subject : to; 		 </span><br><span class="line">             bh&#x3D;&#x2F;PmJ+VE73a9yiNjoTwZASv8Oe2waQj217806BZ4SUAE&#x3D;;  </span><br><span class="line">             b&#x3D;cgU5JI5s9Xhxw5jy8WC0F8NXdS+g3yMRc7Jx0lKJLl27&#x2F;NA&#x2F;IcRjF5iBdysUEEFYHYEgm  </span><br><span class="line">             xMVjQIqMDwouDwN8&#x2F;hk0qXpA3BtVH5X7ohs+8CJ3aF+yUmQYXl5rtj2ezQU9mjGPP348Daf  </span><br><span class="line">             hMCkwJGdJ&#x2F;9CNko137+gHDow3U4aOBh8DqB+vdGarWRFSU0LbG1vYfQ4CqaxvIBmwd1tWSu  </span><br><span class="line">             ctAIaXXPfNXDUlyLzfh6Niuor608At2k3dCX4OxlzrMkfEKzl8E79Iow1CuVwSQCvHvodXy  </span><br><span class="line">             +S2B4ztovicBdeRgzk5xD6ZT6OyZGDbmf21GMEmvyo1d9J2aQpreJpbyrS8A&#x3D;&#x3D;</span><br></pre></td></tr></table></figure>
+<p>a：签名算法<br>c：用于对标头和正文的算法规范化，simple&amp;relaxed<br>d：是这一个域的签名。在DMARC检查签名中的域是否和发送者的域相匹配中用到<br>q：定义用于检索DKIM公钥的查询方法。它不必存在，默认为“ dns / txt”<br>s：在DNS中寻找RSA密钥的参数<br>h：应该包含在签名中的邮件头字段列表<br>bh：邮件正文的hash<br>b：是签名本身的核心，包括’h’给出的字段，以及DKIM-Signature头本身(视b=为空)</p>
+<h5 id="DMARC-Domain-based-Message-Authentication-Report-ing-amp-Conformance"><a href="#DMARC-Domain-based-Message-Authentication-Report-ing-amp-Conformance" class="headerlink" title="DMARC(Domain-based Message Authentication, Report-ing &amp; Conformance)"></a>DMARC(Domain-based Message Authentication, Report-ing &amp; Conformance)</h5><p>SPF对Mail From来源IP进行了验证，DKIM保证内容不被篡改，但是显示在MUA的From字段并没有被保护，DMARC就是在SPF、DKIM两种策略的基础上实施，为解决From字段被伪造的问题提出的。</p>
+<p>接收邮件时，接收邮件服务器会查询 From 标头中的域以获取其 DMARC 策略，该策略指定接收者应对邮件执行的操作。接收服务器执行标识符对齐机制，以检查 From 头中的域是否与 SPF 或 DKIM 验证的域名匹配。对齐机制有两种模式：严格和宽松。在严格模式下，From 头域需要与 SPF 或 DKIM 认证的标识符完全匹配。在宽松模式（默认模式）下，只需要拥有相同的注册域。如果 SPF 或 DKIM 均为pass，并且发件人域通过对齐测试，则电子邮件通过 DMARC 身份验证。对于转发的电子邮件：SPF 可能会为fail，但 DKIM 会继续存在。如果两者都为fail，服务器将强制执行域所有者指定的 DMARC 策略，例如拒绝电子邮件和发送失败报告。</p>
+<h4 id="Swaks"><a href="#Swaks" class="headerlink" title="Swaks"></a>Swaks</h4><p>swaks是一个SMTP测试工具。通过<code>swaks --to user@example.com --server test-server.example.net</code>就可以发送邮件，并且工具本身提供了其他参数可供修改，下面是伪造邮件常用的参数。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">--from &lt;Mail from&gt;</span><br><span class="line"></span><br><span class="line">--helo &lt;伪造的邮件helo头&gt;</span><br><span class="line"></span><br><span class="line">--Subject &lt;邮件标题&gt;</span><br><span class="line"></span><br><span class="line">--header &lt;邮件头信息，subject为邮件标题&gt;</span><br><span class="line"></span><br><span class="line">--h-From &lt;from&gt;</span><br><span class="line"></span><br><span class="line">--data &lt;源邮件&gt;</span><br><span class="line"></span><br><span class="line">--server --au --ap  &lt;认证邮件服务器，邮件账号，密码&gt;</span><br></pre></td></tr></table></figure>
+
+
+<h3 id="邮件分发过程"><a href="#邮件分发过程" class="headerlink" title="邮件分发过程"></a>邮件分发过程</h3><p><img src="/2021/11/02/%E6%B5%85%E8%B0%88%E9%82%AE%E4%BB%B6%E4%BC%AA%E9%80%A0%E6%8A%80%E6%9C%AF/1.png"></p>
+<p>2021年的按篇论文将邮件传输过程中的认证分为四个部分，上面这张图基本上就是整个邮件的分发过程。</p>
+<h5 id="邮件发送鉴权"><a href="#邮件发送鉴权" class="headerlink" title="邮件发送鉴权"></a>邮件发送鉴权</h5><p>发件客户端在整个邮件安全策略中也起着非常重要的作用，在这里是指，发送者MTA(Mail Transport Agent)会对Mail From和认证账号进行一致性检测。</p>
+<p>那么在具体伪造过程中，如果邮件发送客户端进行了鉴权的话，用户在伪造邮件的时候无法对mail from字段随意修改，直观一点就是–from无法被直接修改为<a href="mailto:&#x61;&#100;&#109;&#105;&#x6e;&#x40;&#x6d;&#x61;&#x69;&#x6c;&#46;&#99;&#111;&#109;">&#x61;&#100;&#109;&#105;&#x6e;&#x40;&#x6d;&#x61;&#x69;&#x6c;&#46;&#99;&#111;&#109;</a>。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">swaks --to victim@mail.com --from attack@mail.com  --server mail.con --ap password --au attack@mail.com</span><br></pre></td></tr></table></figure>
+<h5 id="邮件接收认证"><a href="#邮件接收认证" class="headerlink" title="邮件接收认证"></a>邮件接收认证</h5><p>接收认证就是指SPF、DKIM和DMARC这些安全协议。</p>
+<h5 id="邮件转发认证"><a href="#邮件转发认证" class="headerlink" title="邮件转发认证"></a>邮件转发认证</h5><p>这一个过程是针对邮件自动转发的认证，在转发过程中添加一个新的DKIM验证。</p>
+<h5 id="邮件UI渲染"><a href="#邮件UI渲染" class="headerlink" title="邮件UI渲染"></a>邮件UI渲染</h5><p>UI渲染主要是指在客户端展现给用户的界面，这里一般比较关注From字段。其实这一步是鉴定环节中很重要的一步，但是也比较容易忽视。其实目前很多厂商有做代发提醒，或者显示邮件发件方无法确认。有了UI提示之后，还是要依靠用户本身的安全意识来辨别。</p>
+<h3 id="邮件伪造攻击模型"><a href="#邮件伪造攻击模型" class="headerlink" title="邮件伪造攻击模型"></a>邮件伪造攻击模型</h3><p><img src="/2021/11/02/%E6%B5%85%E8%B0%88%E9%82%AE%E4%BB%B6%E4%BC%AA%E9%80%A0%E6%8A%80%E6%9C%AF/2.png"></p>
+<p>2021年的论文中将邮件伪造的攻击模型分成了三种：共享MTA攻击、直接MTA攻击和转发MTA攻击。</p>
+<h5 id="共享MTA攻击"><a href="#共享MTA攻击" class="headerlink" title="共享MTA攻击"></a>共享MTA攻击</h5><p>同一个域内进行发件人伪造，因为发件的MTA有spf记录，所以一般能绕过spf验证。</p>
+<h5 id="直接MTA攻击"><a href="#直接MTA攻击" class="headerlink" title="直接MTA攻击"></a>直接MTA攻击</h5><p>前一部分提到，发件人MTA也是需要进行一个检查的，如果有检查机制的话，就会使Mail From很难伪造，所以攻击者会考虑使用自己的邮件发件服务器，把Mail From 和From都进行篡改。</p>
+<h5 id="转发MTA攻击"><a href="#转发MTA攻击" class="headerlink" title="转发MTA攻击"></a>转发MTA攻击</h5><p>利用的是邮件的转发功能，这种攻击方法结合了前两种攻击方法的优势。</p>
+<h3 id="邮件伪造实践"><a href="#邮件伪造实践" class="headerlink" title="邮件伪造实践"></a>邮件伪造实践</h3><p>这里可以把邮件伪造的方法分为两大类，一类是绕过安全协议，一类是利用UI渲染的差异性。</p>
+<p>一般的话绕过安全协议本身难度会比较大，更多的是利用UI渲染的漏洞来进行一些伪造。<a target="_blank" rel="noopener" href="https://www.anquanke.com/post/id/218889">邮件伪造组合拳</a>这篇文章把各种攻击方式都讲的比较通俗易懂了，当然更全的还是需要去看2020年的论文，里面大概包含了16种攻击方法，实践中还能将多种攻击方法进行组合。还有就是，了解安全协议的原理才能对协议进行绕过，所以在看欺骗的各种方法之前，可以先了解安全协议校验的方法。</p>
+<p>这里可能没有办法概括很多情况，只提一下遇到的情况，并且因为没有自己搭邮件服务器，所以都只能用现成的邮箱来进行伪造。</p>
+<h4 id="SPF绕过"><a href="#SPF绕过" class="headerlink" title="SPF绕过"></a>SPF绕过</h4><p>spf会检测发件人ip和Mail From中的域名是否匹配。那么当我们拥有a.com的邮箱之后，使用a.com的MTA发件的话，SPF是为pass的，因为邮件由合法的ip发出。我们可以尝试修改Mail From为<code>admin@a.com</code>，在a.com没有对发件进行严格的检测时，这种伪造方法是可行的。</p>
+<p>但是这种方法只能伪造a.com下的账户，并且要求发件人MTA不进行严格的检查，通常接收端MUA(mail user agent)还会显示代发提醒。</p>
+<h4 id="DKIM绕过"><a href="#DKIM绕过" class="headerlink" title="DKIM绕过"></a>DKIM绕过</h4><p><a target="_blank" rel="noopener" href="https://www.anquanke.com/post/id/218889">邮件伪造组合拳</a>中的重放攻击部分就讲的关于DKIM的绕过。</p>
+<p>DKIM的<code>h=</code>中说明DKIM签名的字段，并且From是一定要在签名里面的。</p>
+<p>但是如果有好几个标头，例如From，DKIM签名的是最后一个标头，但MUA显示的可能是第一个。</p>
+<p>DKIM中的<code>l=</code>字段是规定的签名body的长度，在这种情况下就可以在后面附加一些内容。</p>
+<h4 id="UI渲染绕过"><a href="#UI渲染绕过" class="headerlink" title="UI渲染绕过"></a>UI渲染绕过</h4><p>如果伪造邮件是想进行诈骗和钓鱼的话，MUA中显示的发件人是攻击者最想伪造的部分，MUA显示的发件人地址是From字段，而各大邮件系统对From字段的解析可以说是漏洞百出。2020年和2021年的两篇论文都有很多修改From字段进行攻击的案例，在这些基础上发散一下，可能还会有更多新的方法。</p>
+<p>过严的安全规则一般带来的比较烂的用户体验，两者之间的权衡还是很微妙的。但是邮件厂商在MUA里面多加一些安全提醒还是非常非常有必要的，毕竟安全这种东西完全依靠用户的安全意识也太扯了。</p>
+<p>最后在思考邮件厂商过滤一下From字段里面的奇怪字符会带来什么坏处吗（真的没有阴阳怪气）？目前好像没有看见厂商在做，按理来说UI渲染的问题应该没有这么棘手才对。</p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/%E9%82%AE%E4%BB%B6%E5%AE%89%E5%85%A8/" rel="tag"># 邮件安全</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2021/11/02/%E5%8D%8E%E4%B8%BA%E6%AD%A6%E7%A0%94%E6%89%80%E4%B8%80%E6%97%A5%E6%B8%B8/" rel="prev" title="华为武研所一日游">
+      <i class="fa fa-chevron-left"></i> 华为武研所一日游
+    </a></div>
+      <div class="post-nav-item"></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+    <div class="comments" id="valine-comments"></div>
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%8F%82%E8%80%83%E6%96%87%E7%8C%AE"><span class="nav-number">1.</span> <span class="nav-text">参考文献</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%BF%85%E8%A6%81%E7%9F%A5%E8%AF%86"><span class="nav-number">2.</span> <span class="nav-text">必要知识</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E9%82%AE%E4%BB%B6%E7%9B%B8%E5%85%B3%E5%AD%97%E6%AE%B5"><span class="nav-number">2.1.</span> <span class="nav-text">邮件相关字段</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#From"><span class="nav-number">2.1.1.</span> <span class="nav-text">From</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#Mail-From"><span class="nav-number">2.1.2.</span> <span class="nav-text">Mail From</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#Sender"><span class="nav-number">2.1.3.</span> <span class="nav-text">Sender</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%AE%89%E5%85%A8%E5%8D%8F%E8%AE%AE"><span class="nav-number">2.2.</span> <span class="nav-text">安全协议</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#SPF-Sender-Policy-Framework"><span class="nav-number">2.2.1.</span> <span class="nav-text">SPF(Sender Policy Framework)</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#DKIM-DomainKeys-Identified-Mail"><span class="nav-number">2.2.2.</span> <span class="nav-text">DKIM(DomainKeys Identified Mail)</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#DMARC-Domain-based-Message-Authentication-Report-ing-amp-Conformance"><span class="nav-number">2.2.3.</span> <span class="nav-text">DMARC(Domain-based Message Authentication, Report-ing &amp; Conformance)</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Swaks"><span class="nav-number">2.3.</span> <span class="nav-text">Swaks</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E9%82%AE%E4%BB%B6%E5%88%86%E5%8F%91%E8%BF%87%E7%A8%8B"><span class="nav-number">3.</span> <span class="nav-text">邮件分发过程</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#%E9%82%AE%E4%BB%B6%E5%8F%91%E9%80%81%E9%89%B4%E6%9D%83"><span class="nav-number">3.0.1.</span> <span class="nav-text">邮件发送鉴权</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#%E9%82%AE%E4%BB%B6%E6%8E%A5%E6%94%B6%E8%AE%A4%E8%AF%81"><span class="nav-number">3.0.2.</span> <span class="nav-text">邮件接收认证</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#%E9%82%AE%E4%BB%B6%E8%BD%AC%E5%8F%91%E8%AE%A4%E8%AF%81"><span class="nav-number">3.0.3.</span> <span class="nav-text">邮件转发认证</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#%E9%82%AE%E4%BB%B6UI%E6%B8%B2%E6%9F%93"><span class="nav-number">3.0.4.</span> <span class="nav-text">邮件UI渲染</span></a></li></ol></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E9%82%AE%E4%BB%B6%E4%BC%AA%E9%80%A0%E6%94%BB%E5%87%BB%E6%A8%A1%E5%9E%8B"><span class="nav-number">4.</span> <span class="nav-text">邮件伪造攻击模型</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#%E5%85%B1%E4%BA%ABMTA%E6%94%BB%E5%87%BB"><span class="nav-number">4.0.1.</span> <span class="nav-text">共享MTA攻击</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#%E7%9B%B4%E6%8E%A5MTA%E6%94%BB%E5%87%BB"><span class="nav-number">4.0.2.</span> <span class="nav-text">直接MTA攻击</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#%E8%BD%AC%E5%8F%91MTA%E6%94%BB%E5%87%BB"><span class="nav-number">4.0.3.</span> <span class="nav-text">转发MTA攻击</span></a></li></ol></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E9%82%AE%E4%BB%B6%E4%BC%AA%E9%80%A0%E5%AE%9E%E8%B7%B5"><span class="nav-number">5.</span> <span class="nav-text">邮件伪造实践</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#SPF%E7%BB%95%E8%BF%87"><span class="nav-number">5.1.</span> <span class="nav-text">SPF绕过</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#DKIM%E7%BB%95%E8%BF%87"><span class="nav-number">5.2.</span> <span class="nav-text">DKIM绕过</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#UI%E6%B8%B2%E6%9F%93%E7%BB%95%E8%BF%87"><span class="nav-number">5.3.</span> <span class="nav-text">UI渲染绕过</span></a></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">yjy123</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">20</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-tags">
+        <span class="site-state-item-count">15</span>
+        <span class="site-state-item-name">tags</span>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/yjy123123" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;yjy123123" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:674943053@qq.com" title="E-Mail → mailto:674943053@qq.com" rel="noopener" target="_blank"><i class="fa fa-envelope fa-fw"></i>E-Mail</a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">yjy123</span>
+</div>
+  <div class="powered-by">Powered by <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://muse.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a>
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+
+<script>
+NexT.utils.loadComments(document.querySelector('#valine-comments'), () => {
+  NexT.utils.getScript('https://cdn.jsdelivr.net/npm/valine@1.4.14/dist/Valine.min.js', () => {
+    var GUEST = ['nick', 'mail', 'link'];
+    var guest = 'nick,mail,link';
+    guest = guest.split(',').filter(item => {
+      return GUEST.includes(item);
+    });
+    new Valine({
+      el         : '#valine-comments',
+      verify     : false,
+      notify     : false,
+      appId      : 'zB1H0PKzDpjxuuiBc2N34Cns-gzGzoHsz',
+      appKey     : 'HBLQQLpG46wIWMhTv8jWvCu9',
+      placeholder: "Just go go",
+      avatar     : 'mm',
+      meta       : guest,
+      pageSize   : '10' || 10,
+      visitor    : true,
+      lang       : '' || 'zh-cn',
+      path       : location.pathname,
+      recordIP   : false,
+      serverURLs : ''
+    });
+  }, window.Valine);
+});
+</script>
+
+</body>
+</html>
