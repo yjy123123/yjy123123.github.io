@@ -30,7 +30,7 @@
 <meta property="og:image" content="http://example.com/2021/11/02/%E6%B5%85%E8%B0%88%E9%82%AE%E4%BB%B6%E4%BC%AA%E9%80%A0%E6%8A%80%E6%9C%AF/1.png">
 <meta property="og:image" content="http://example.com/2021/11/02/%E6%B5%85%E8%B0%88%E9%82%AE%E4%BB%B6%E4%BC%AA%E9%80%A0%E6%8A%80%E6%9C%AF/2.png">
 <meta property="article:published_time" content="2021-11-02T12:16:36.000Z">
-<meta property="article:modified_time" content="2021-11-04T10:41:23.163Z">
+<meta property="article:modified_time" content="2021-11-06T02:25:34.730Z">
 <meta property="article:author" content="yjy123">
 <meta property="article:tag" content="邮件安全">
 <meta name="twitter:card" content="summary">
@@ -184,7 +184,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">Edited on</span>
-                <time title="Modified: 2021-11-04 18:41:23" itemprop="dateModified" datetime="2021-11-04T18:41:23+08:00">2021-11-04</time>
+                <time title="Modified: 2021-11-06 10:25:34" itemprop="dateModified" datetime="2021-11-06T10:25:34+08:00">2021-11-06</time>
               </span>
 
           
@@ -254,7 +254,7 @@
 <h3 id="邮件分发过程"><a href="#邮件分发过程" class="headerlink" title="邮件分发过程"></a>邮件分发过程</h3><p><img src="/2021/11/02/%E6%B5%85%E8%B0%88%E9%82%AE%E4%BB%B6%E4%BC%AA%E9%80%A0%E6%8A%80%E6%9C%AF/1.png"></p>
 <p>2021年的按篇论文将邮件传输过程中的认证分为四个部分，上面这张图基本上就是整个邮件的分发过程。</p>
 <h5 id="邮件发送鉴权"><a href="#邮件发送鉴权" class="headerlink" title="邮件发送鉴权"></a>邮件发送鉴权</h5><p>发件客户端在整个邮件安全策略中也起着非常重要的作用，在这里是指，发送者MTA(Mail Transport Agent)会对Mail From和认证账号进行一致性检测。</p>
-<p>那么在具体伪造过程中，如果邮件发送客户端进行了鉴权的话，用户在伪造邮件的时候无法对mail from字段随意修改，直观一点就是–from无法被直接修改为<a href="mailto:&#97;&#100;&#109;&#x69;&#110;&#64;&#109;&#97;&#105;&#x6c;&#x2e;&#99;&#111;&#109;">&#97;&#100;&#109;&#x69;&#110;&#64;&#109;&#97;&#105;&#x6c;&#x2e;&#99;&#111;&#109;</a>。</p>
+<p>那么在具体伪造过程中，如果邮件发送客户端进行了鉴权的话，用户在伪造邮件的时候无法对mail from字段随意修改，直观一点就是–from无法被直接修改为<a href="mailto:&#97;&#x64;&#x6d;&#x69;&#x6e;&#64;&#x6d;&#x61;&#x69;&#108;&#x2e;&#99;&#111;&#x6d;">&#97;&#x64;&#x6d;&#x69;&#x6e;&#64;&#x6d;&#x61;&#x69;&#108;&#x2e;&#99;&#111;&#x6d;</a>。</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">swaks --to victim@mail.com --from attack@mail.com  --server mail.con --ap password --au attack@mail.com</span><br></pre></td></tr></table></figure>
 <h5 id="邮件接收认证"><a href="#邮件接收认证" class="headerlink" title="邮件接收认证"></a>邮件接收认证</h5><p>接收认证就是指SPF、DKIM和DMARC这些安全协议。</p>
 <h5 id="邮件转发认证"><a href="#邮件转发认证" class="headerlink" title="邮件转发认证"></a>邮件转发认证</h5><p>这一个过程是针对邮件自动转发的认证，在转发过程中添加一个新的DKIM验证。</p>
