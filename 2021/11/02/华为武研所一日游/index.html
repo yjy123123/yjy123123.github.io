@@ -28,7 +28,7 @@
 <meta property="og:description" content="小学生日记">
 <meta property="og:locale" content="en_US">
 <meta property="article:published_time" content="2021-11-02T11:24:46.000Z">
-<meta property="article:modified_time" content="2021-11-06T02:45:22.532Z">
+<meta property="article:modified_time" content="2021-11-06T02:48:18.079Z">
 <meta property="article:author" content="yjy123">
 <meta property="article:tag" content="ctf">
 <meta name="twitter:card" content="summary">
@@ -181,7 +181,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">Edited on</span>
-                <time title="Modified: 2021-11-06 10:45:22" itemprop="dateModified" datetime="2021-11-06T10:45:22+08:00">2021-11-06</time>
+                <time title="Modified: 2021-11-06 10:48:18" itemprop="dateModified" datetime="2021-11-06T10:48:18+08:00">2021-11-06</time>
               </span>
 
           
@@ -220,13 +220,13 @@
         <p>好久没写博客了，刚好有空能写一写，这个月大部分时间在忙Datacon的邮件比赛，其实按理来说能有一点输出，但是感觉知识还是论文里面的东西，写博客还不如看论文。</p>
 <p>10月31号去武研所参加了线下的CTF比赛，可能因为本人没有什么羞耻心，所以完全冲着包饭去的，也没想着要做出题拿奖什么的。</p>
 <p>10道题，只有一道Web题，然后特别搞，因为它是一道原题，网上有完整的<a target="_blank" rel="noopener" href="https://blog.csdn.net/Zero_Adam/article/details/114680579">Write up</a>，说实话还挺离谱的（有个队在主持人还在讲开场白的时候就做出来了）。然后因为其他题特别难，基本上做出这道题就有个优胜奖了。</p>
-<h3 id="解题"><a href="#解题" class="headerlink" title="解题"></a>解题</h3><p>首先给了一段代码，大概就是通过query发送sql的查询语句。</p>
+<h3 id="解题"><a href="#解题" class="headerlink" title="解题"></a>解题</h3><h4 id="第一层"><a href="#第一层" class="headerlink" title="第一层"></a>第一层</h4><p>首先给了一段代码，大概就是通过query发送sql的查询语句。</p>
 <p>第一想法是，注入吗？然后不是；</p>
 <p>第二想法是，直接通过sql语句写木马。然后他正则是把log、file这些拉黑名单了，而且要求query必须是string，所以没办法通过数组或者其他方法绕过正则匹配；</p>
 <p>第三想法是，算了，随便查询一下吧，然后<code>select * from flag</code>，居然真的就输出了查询结果，是<code>gO0d_j0b_f0r_you2333333</code>，我以为这道题就这样猝不及防的结束了，其实才刚刚开始。</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line">&lt;?php</span><br><span class="line">include &#39;conn.php&#39;;</span><br><span class="line">if(isset($_GET[&quot;query&quot;]))&#123;</span><br><span class="line">    $query &#x3D; $_GET[&quot;query&quot;];</span><br><span class="line">    if(!is_string($query))&#123;</span><br><span class="line">        die(&#39;give me a string ok?&#39;);</span><br><span class="line">    &#125;</span><br><span class="line">    if(preg_match(&#39;&#x2F;log|local|set|file&#x2F;i&#39;, $query))&#123;</span><br><span class="line">        die(&#39;no hack&#39;);</span><br><span class="line">    &#125;</span><br><span class="line">    $result &#x3D; $mysqli-&gt;query($query);</span><br><span class="line">    if ($result &#x3D;&#x3D;&#x3D; false) &#123;</span><br><span class="line">        die(&quot;database error, please check your input&quot;);</span><br><span class="line">    &#125;</span><br><span class="line">    $row &#x3D; $result-&gt;fetch_assoc();</span><br><span class="line">    if($row &#x3D;&#x3D;&#x3D; NULL)&#123;</span><br><span class="line">        die(&quot;searched nothing&quot;);</span><br><span class="line">    &#125;</span><br><span class="line">    if(in_array($query, $row))&#123;</span><br><span class="line">        echo $secret;</span><br><span class="line">    &#125;</span><br><span class="line">    $result-&gt;free();</span><br><span class="line">    $mysqli-&gt;close();</span><br><span class="line">&#125;else&#123;</span><br><span class="line">    highlight_file(&#39;index.php&#39;);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">?&gt;</span><br></pre></td></tr></table></figure>
 <p>因为<code>gO0d_j0b_f0r_you2333333</code>提交不对，所以访问对应的网址，成功下载了压缩包，里面有三个文件，<code>gO0d_j0b_f0r_you2333333.php</code>，<code>admin_test_class.php</code> 和<code>function.php</code> 。</p>
-<p><code>gO0d_j0b_f0r_you2333333.php</code>文件很简单，就是设置cookie，但是这个文件中有一个unserialize的操作，那么这道题应该就是php的反序列化了。我理解的序列化就是，把对象存储成固定的格式，内置一些函数进行解析。</p>
+<h4 id="第二层"><a href="#第二层" class="headerlink" title="第二层"></a>第二层</h4><p><code>gO0d_j0b_f0r_you2333333.php</code>文件很简单，就是设置cookie，但是这个文件中有一个unserialize的操作，那么这道题应该就是php的反序列化了。我理解的序列化就是，把对象存储成固定的格式，内置一些函数进行解析。</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">&lt;?php</span><br><span class="line">include &#39;config.php&#39;;</span><br><span class="line">include &#39;function.php&#39;;</span><br><span class="line"></span><br><span class="line">if(!isset($_COOKIE[&#39;user&#39;]))&#123;</span><br><span class="line">	setcookie(&quot;user&quot;, serialize(&#39;ctfer&#39;), time()+3600);</span><br><span class="line">&#125;else&#123;</span><br><span class="line">	echo &quot;hello&quot;;</span><br><span class="line">	echo unserialize($_COOKIE[&#39;user&#39;]);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 
 
@@ -236,8 +236,8 @@
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">&lt;?php</span><br><span class="line">function get_flag($cmd)&#123;</span><br><span class="line">	if($cmd &#x3D;&#x3D;&#x3D; 1)&#123;</span><br><span class="line">		echo $flag;</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">function __autoload($classname)&#123;</span><br><span class="line">	require &quot;.&#x2F;$classname.php&quot;;</span><br><span class="line">&#125;</span><br><span class="line">?&gt;</span><br></pre></td></tr></table></figure>
 <p>看完三个文件之后，我的第一想法就是构造test对象，然后序列化后放入cookie，但是<code>gO0d_j0b_f0r_you2333333.php</code>只include了<code>function.php</code>，我只见过字符串和对象序列化，并没有见过函数序列化，然后我搜了一圈，没搜到（中途还和Write up擦肩而过，因为它的标题看着就让人没有点进去的欲望）。</p>
 <p>然后陷入一系列奇怪的想法里面，比如希望构造字符串，能echo写木马进文件，但是只停留在输出字符串，真的是基础不牢，对这一块了解还是不太深入。</p>
-<p>纠结了半天很想直接跑路，早点回去睡觉（7点爬起来颠簸一路过去），但是不知道怎么没跑。</p>
-<p>然后看到<code>function.php</code>里面有个<code>__autoload</code>函数，这个函数之前遇见过，然后就搜到了<a target="_blank" rel="noopener" href="https://blog.csdn.net/Zero_Adam/article/details/114680579">Write up</a>，直接原地裂开，这个Write up写的还蛮好的，我懒得继续写（洗稿）了。</p>
+<p>纠结了半天很想直接跑路，早点回去睡觉（7点爬起来颠簸一路过去），但是不知道怎么没跑（可能因为“来都来了”？）。</p>
+<p>然后看到<code>function.php</code>里面有个<code>__autoload</code>函数，这个函数之前没见过，然后就搜到了<a target="_blank" rel="noopener" href="https://blog.csdn.net/Zero_Adam/article/details/114680579">Write up</a>，直接原地裂开，这个Write up写的还蛮好的，我就懒得继续写（洗稿）了。</p>
 <h3 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h3><p>但是在做题的过程中看到一篇写的很好的博客——<a target="_blank" rel="noopener" href="http://www.lmxspace.com/2018/05/03/php-unserialize-%E5%88%9D%E8%AF%86/">php-unserialize-初识</a>，里面讲构造POP链和ROP链的地方蛮有意思，在都有一定的了解的时候，会发现知识都是融会贯通的。PWN和Web在某种程度上也是贯通的，只不过面对的层面不一样罢了。</p>
 <p>最后的感觉就是，少壮不努力，老大徒伤悲。自己已经是条老狗了，年轻人还有无限的未来。</p>
 
@@ -324,7 +324,7 @@
 
       <!--noindex-->
       <div class="post-toc-wrap sidebar-panel">
-          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%A7%A3%E9%A2%98"><span class="nav-number">1.</span> <span class="nav-text">解题</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%80%BB%E7%BB%93"><span class="nav-number">2.</span> <span class="nav-text">总结</span></a></li></ol></div>
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%A7%A3%E9%A2%98"><span class="nav-number">1.</span> <span class="nav-text">解题</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E7%AC%AC%E4%B8%80%E5%B1%82"><span class="nav-number">1.1.</span> <span class="nav-text">第一层</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E7%AC%AC%E4%BA%8C%E5%B1%82"><span class="nav-number">1.2.</span> <span class="nav-text">第二层</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%80%BB%E7%BB%93"><span class="nav-number">2.</span> <span class="nav-text">总结</span></a></li></ol></div>
       </div>
       <!--/noindex-->
 
