@@ -28,7 +28,7 @@
 <meta property="og:description" content="小学生日记">
 <meta property="og:locale" content="en_US">
 <meta property="article:published_time" content="2021-11-02T11:24:46.000Z">
-<meta property="article:modified_time" content="2021-11-06T02:24:27.015Z">
+<meta property="article:modified_time" content="2021-11-06T02:45:22.532Z">
 <meta property="article:author" content="yjy123">
 <meta property="article:tag" content="ctf">
 <meta name="twitter:card" content="summary">
@@ -181,7 +181,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">Edited on</span>
-                <time title="Modified: 2021-11-06 10:24:27" itemprop="dateModified" datetime="2021-11-06T10:24:27+08:00">2021-11-06</time>
+                <time title="Modified: 2021-11-06 10:45:22" itemprop="dateModified" datetime="2021-11-06T10:45:22+08:00">2021-11-06</time>
               </span>
 
           
@@ -220,7 +220,7 @@
         <p>好久没写博客了，刚好有空能写一写，这个月大部分时间在忙Datacon的邮件比赛，其实按理来说能有一点输出，但是感觉知识还是论文里面的东西，写博客还不如看论文。</p>
 <p>10月31号去武研所参加了线下的CTF比赛，可能因为本人没有什么羞耻心，所以完全冲着包饭去的，也没想着要做出题拿奖什么的。</p>
 <p>10道题，只有一道Web题，然后特别搞，因为它是一道原题，网上有完整的<a target="_blank" rel="noopener" href="https://blog.csdn.net/Zero_Adam/article/details/114680579">Write up</a>，说实话还挺离谱的（有个队在主持人还在讲开场白的时候就做出来了）。然后因为其他题特别难，基本上做出这道题就有个优胜奖了。</p>
-<h2 id="解题"><a href="#解题" class="headerlink" title="解题"></a>解题</h2><p>首先给了一段代码，大概就是通过query发送sql的查询语句。</p>
+<h3 id="解题"><a href="#解题" class="headerlink" title="解题"></a>解题</h3><p>首先给了一段代码，大概就是通过query发送sql的查询语句。</p>
 <p>第一想法是，注入吗？然后不是；</p>
 <p>第二想法是，直接通过sql语句写木马。然后他正则是把log、file这些拉黑名单了，而且要求query必须是string，所以没办法通过数组或者其他方法绕过正则匹配；</p>
 <p>第三想法是，算了，随便查询一下吧，然后<code>select * from flag</code>，居然真的就输出了查询结果，是<code>gO0d_j0b_f0r_you2333333</code>，我以为这道题就这样猝不及防的结束了，其实才刚刚开始。</p>
@@ -324,7 +324,7 @@
 
       <!--noindex-->
       <div class="post-toc-wrap sidebar-panel">
-          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%A7%A3%E9%A2%98"><span class="nav-number">1.</span> <span class="nav-text">解题</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%80%BB%E7%BB%93"><span class="nav-number">1.1.</span> <span class="nav-text">总结</span></a></li></ol></li></ol></div>
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%A7%A3%E9%A2%98"><span class="nav-number">1.</span> <span class="nav-text">解题</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%80%BB%E7%BB%93"><span class="nav-number">2.</span> <span class="nav-text">总结</span></a></li></ol></div>
       </div>
       <!--/noindex-->
 
