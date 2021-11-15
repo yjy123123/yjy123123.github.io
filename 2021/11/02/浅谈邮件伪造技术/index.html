@@ -32,7 +32,7 @@
 <meta property="og:image" content="http://yjy123123.github.io/2021/11/02/%E6%B5%85%E8%B0%88%E9%82%AE%E4%BB%B6%E4%BC%AA%E9%80%A0%E6%8A%80%E6%9C%AF/1.png">
 <meta property="og:image" content="http://yjy123123.github.io/2021/11/02/%E6%B5%85%E8%B0%88%E9%82%AE%E4%BB%B6%E4%BC%AA%E9%80%A0%E6%8A%80%E6%9C%AF/2.png">
 <meta property="article:published_time" content="2021-11-02T12:16:36.000Z">
-<meta property="article:modified_time" content="2021-11-15T07:40:17.288Z">
+<meta property="article:modified_time" content="2021-11-15T07:49:26.021Z">
 <meta property="article:author" content="yjy123">
 <meta property="article:tag" content="邮件安全">
 <meta name="twitter:card" content="summary">
@@ -186,7 +186,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">Edited on</span>
-                <time title="Modified: 2021-11-15 15:40:17" itemprop="dateModified" datetime="2021-11-15T15:40:17+08:00">2021-11-15</time>
+                <time title="Modified: 2021-11-15 15:49:26" itemprop="dateModified" datetime="2021-11-15T15:49:26+08:00">2021-11-15</time>
               </span>
 
           
@@ -256,18 +256,18 @@
 <h3 id="邮件分发过程"><a href="#邮件分发过程" class="headerlink" title="邮件分发过程"></a>邮件分发过程</h3><p><img src="/2021/11/02/%E6%B5%85%E8%B0%88%E9%82%AE%E4%BB%B6%E4%BC%AA%E9%80%A0%E6%8A%80%E6%9C%AF/1.png"></p>
 <p>2021年的论文将邮件传输过程中的认证分为四个部分，上面这张图基本上就是整个邮件的分发过程。</p>
 <h4 id="邮件发送鉴权"><a href="#邮件发送鉴权" class="headerlink" title="邮件发送鉴权"></a>邮件发送鉴权</h4><p>发件客户端在整个邮件安全策略中也起着非常重要的作用，在这里是指，发送者MTA(Mail Transport Agent)会对Mail From和认证账号进行一致性检测。</p>
-<p>那么在具体伪造过程中，如果邮件发送客户端进行了鉴权的话，用户在伪造邮件的时候无法对mail from字段随意修改，直观一点就是–from无法被直接修改为<a href="mailto:&#x61;&#100;&#x6d;&#105;&#110;&#x40;&#109;&#x61;&#105;&#x6c;&#46;&#x63;&#x6f;&#x6d;">&#x61;&#100;&#x6d;&#105;&#110;&#x40;&#109;&#x61;&#105;&#x6c;&#46;&#x63;&#x6f;&#x6d;</a>。</p>
+<p>那么在具体伪造过程中，如果邮件发送客户端进行了鉴权的话，用户在伪造邮件的时候无法对mail from字段随意修改，直观一点就是使用swaks的时候–from字段无法被直接修改为<a href="mailto:&#97;&#x64;&#109;&#x69;&#x6e;&#x40;&#109;&#x61;&#x69;&#108;&#46;&#x63;&#x6f;&#109;">&#97;&#x64;&#109;&#x69;&#x6e;&#x40;&#109;&#x61;&#x69;&#108;&#46;&#x63;&#x6f;&#109;</a>，会要求–from和–au相同。</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">swaks --to victim@mail.com --from attack@mail.com  --server mail.con --ap password --au attack@mail.com</span><br></pre></td></tr></table></figure>
 <h4 id="邮件接收认证"><a href="#邮件接收认证" class="headerlink" title="邮件接收认证"></a>邮件接收认证</h4><p>接收认证就是指SPF、DKIM和DMARC这些安全协议。</p>
 <h4 id="邮件转发认证"><a href="#邮件转发认证" class="headerlink" title="邮件转发认证"></a>邮件转发认证</h4><p>这一个过程是针对邮件自动转发的认证，在转发过程中添加一个新的DKIM验证。</p>
-<h4 id="邮件UI渲染"><a href="#邮件UI渲染" class="headerlink" title="邮件UI渲染"></a>邮件UI渲染</h4><p>UI渲染主要是指在客户端展现给用户的界面，这里一般比较关注From字段。其实这一步是鉴定环节中很重要的一步，但是也比较容易忽视。其实目前很多厂商有做代发提醒，或者显示邮件发件方无法确认。有了UI提示之后，还是要依靠用户本身的安全意识来辨别。</p>
+<h4 id="邮件UI渲染"><a href="#邮件UI渲染" class="headerlink" title="邮件UI渲染"></a>邮件UI渲染</h4><p>UI渲染主要是指在客户端展现给用户的界面，这里一般比较关注From字段。其实这一步是保证邮件安全环节中很重要的一步，但是也比较容易忽视。其实目前很多厂商有做代发提醒，或者显示邮件发件方无法确认。有了UI提示之后，还是要依靠用户本身的安全意识来辨别，但是添加相关安全提示之后，我觉得是会大大提高用户警惕心。</p>
 <h3 id="邮件伪造攻击模型"><a href="#邮件伪造攻击模型" class="headerlink" title="邮件伪造攻击模型"></a>邮件伪造攻击模型</h3><p><img src="/2021/11/02/%E6%B5%85%E8%B0%88%E9%82%AE%E4%BB%B6%E4%BC%AA%E9%80%A0%E6%8A%80%E6%9C%AF/2.png"></p>
 <p>2021年的论文中将邮件伪造的攻击模型分成了三种：共享MTA攻击、直接MTA攻击和转发MTA攻击。</p>
 <h4 id="共享MTA攻击"><a href="#共享MTA攻击" class="headerlink" title="共享MTA攻击"></a>共享MTA攻击</h4><p>同一个域内进行发件人伪造，因为发件的MTA有spf记录，所以一般能绕过spf验证。</p>
 <h4 id="直接MTA攻击"><a href="#直接MTA攻击" class="headerlink" title="直接MTA攻击"></a>直接MTA攻击</h4><p>前一部分提到，发件人MTA也是需要进行一个检查的，如果有检查机制的话，就会使Mail From很难伪造，所以攻击者会考虑使用自己的邮件发件服务器，把Mail From 和From都进行篡改。</p>
 <h4 id="转发MTA攻击"><a href="#转发MTA攻击" class="headerlink" title="转发MTA攻击"></a>转发MTA攻击</h4><p>利用的是邮件的转发功能，这种攻击方法结合了前两种攻击方法的优势。</p>
 <h3 id="邮件伪造实践"><a href="#邮件伪造实践" class="headerlink" title="邮件伪造实践"></a>邮件伪造实践</h3><p>这里可以把邮件伪造的方法分为两大类，一类是绕过安全协议，一类是利用UI渲染的差异性。</p>
-<p>一般的话绕过安全协议本身难度会比较大，更多的是利用UI渲染的漏洞来进行一些伪造。<a target="_blank" rel="noopener" href="https://www.anquanke.com/post/id/218889">邮件伪造组合拳</a>这篇文章把各种攻击方式都讲的比较通俗易懂了，当然更全的还是需要去看2020年的论文，里面大概包含了16种攻击方法，实践中还能将多种攻击方法进行组合。还有就是，了解安全协议的原理才能对协议进行绕过，所以在看欺骗的各种方法之前，可以先了解安全协议校验的方法。</p>
+<p>一般的话绕过安全协议本身难度会比较大，更多的是利用UI渲染的漏洞来进行一些伪造。<a target="_blank" rel="noopener" href="https://www.anquanke.com/post/id/218889">邮件伪造组合拳</a>这篇文章把各种攻击方式都讲的比较通俗易懂了，当然更全的还是需要去看2020年的论文，里面大概包含了16种攻击方法，实践中还能将多种攻击方法进行组合。除此之外，了解安全协议的原理才能对协议进行绕过，所以在看欺骗的各种方法之前，可以先了解安全协议校验的方法和具体验证的字段。</p>
 <p>这里可能没有办法概括很多情况，只提一下遇到的情况，并且因为没有自己搭邮件服务器，所以都只能用现成的邮箱来进行伪造。</p>
 <h4 id="SPF绕过"><a href="#SPF绕过" class="headerlink" title="SPF绕过"></a>SPF绕过</h4><p>spf会检测发件人ip和Mail From中的域名是否匹配。那么当我们拥有a.com的邮箱之后，使用a.com的MTA发件的话，SPF是为pass的，因为邮件由合法的ip发出。我们可以尝试修改Mail From为<code>admin@a.com</code>，在a.com没有对发件进行严格的检测时，这种伪造方法是可行的。</p>
 <p>但是这种方法只能伪造a.com下的账户，并且要求发件人MTA不进行严格的检查，通常接收端MUA(mail user agent)还会显示代发提醒。</p>
