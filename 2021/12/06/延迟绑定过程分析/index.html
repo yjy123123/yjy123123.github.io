@@ -29,17 +29,17 @@
 <meta property="og:site_name" content="yjy&#39;s Blog">
 <meta property="og:description" content="一直对plt表和got表都不太了解，借这个机会都弄懂。">
 <meta property="og:locale" content="en_US">
-<meta property="og:image" content="http://yjy123123.github.io/1">
-<meta property="og:image" content="http://yjy123123.github.io/2">
-<meta property="og:image" content="http://yjy123123.github.io/3">
-<meta property="og:image" content="http://yjy123123.github.io/4">
-<meta property="og:image" content="http://yjy123123.github.io/5">
-<meta property="og:image" content="http://yjy123123.github.io/6">
+<meta property="og:image" content="http://yjy123123.github.io/2021/12/06/%E5%BB%B6%E8%BF%9F%E7%BB%91%E5%AE%9A%E8%BF%87%E7%A8%8B%E5%88%86%E6%9E%90/1.png">
+<meta property="og:image" content="http://yjy123123.github.io/2021/12/06/%E5%BB%B6%E8%BF%9F%E7%BB%91%E5%AE%9A%E8%BF%87%E7%A8%8B%E5%88%86%E6%9E%90/2.png">
+<meta property="og:image" content="http://yjy123123.github.io/2021/12/06/%E5%BB%B6%E8%BF%9F%E7%BB%91%E5%AE%9A%E8%BF%87%E7%A8%8B%E5%88%86%E6%9E%90/3.png">
+<meta property="og:image" content="http://yjy123123.github.io/2021/12/06/%E5%BB%B6%E8%BF%9F%E7%BB%91%E5%AE%9A%E8%BF%87%E7%A8%8B%E5%88%86%E6%9E%90/4.png">
+<meta property="og:image" content="http://yjy123123.github.io/2021/12/06/%E5%BB%B6%E8%BF%9F%E7%BB%91%E5%AE%9A%E8%BF%87%E7%A8%8B%E5%88%86%E6%9E%90/5.png">
+<meta property="og:image" content="http://yjy123123.github.io/2021/12/06/%E5%BB%B6%E8%BF%9F%E7%BB%91%E5%AE%9A%E8%BF%87%E7%A8%8B%E5%88%86%E6%9E%90/6.png">
 <meta property="article:published_time" content="2021-12-06T12:40:40.000Z">
-<meta property="article:modified_time" content="2021-12-07T12:40:00.370Z">
+<meta property="article:modified_time" content="2021-12-08T02:53:41.624Z">
 <meta property="article:author" content="yjy123">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:image" content="http://yjy123123.github.io/1">
+<meta name="twitter:image" content="http://yjy123123.github.io/2021/12/06/%E5%BB%B6%E8%BF%9F%E7%BB%91%E5%AE%9A%E8%BF%87%E7%A8%8B%E5%88%86%E6%9E%90/1.png">
 
 <link rel="canonical" href="http://yjy123123.github.io/2021/12/06/%E5%BB%B6%E8%BF%9F%E7%BB%91%E5%AE%9A%E8%BF%87%E7%A8%8B%E5%88%86%E6%9E%90/">
 
@@ -189,7 +189,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">Edited on</span>
-                <time title="Modified: 2021-12-07 20:40:00" itemprop="dateModified" datetime="2021-12-07T20:40:00+08:00">2021-12-07</time>
+                <time title="Modified: 2021-12-08 10:53:41" itemprop="dateModified" datetime="2021-12-08T10:53:41+08:00">2021-12-08</time>
               </span>
 
           
@@ -231,19 +231,19 @@
 <p>got表和plt表都是程序调用外部函数时，定位该函数需要使用到的表。</p>
 <p>got表(Global Offset Table)是全局偏移量表，这是链接器在执行链接时需要填充的部分，保存了所有外部符号的地址信息。got表有四项内容:</p>
 <ul>
-<li>**GOT[0]**是.dynamic段的装载地址，.dynamic段包含了动态链接器用来绑定过程地址的信息，比如符号的位置和重定位信息;</li>
-<li>**GOT[1]**是动态链接器的标识<code>link_map</code>的地址;</li>
-<li>**GOT[2]**包含动态链接器的延迟绑定代码<code>_dl_runtime_resolve</code>的入口点，用于得到真正的函数地址，回写到对应的got表中;</li>
-<li>从**GOT[3]**开始就是函数的地址。</li>
+<li><strong>GOT[0]</strong> 是.dynamic段的装载地址，.dynamic段包含了动态链接器用来绑定过程地址的信息，比如符号的位置和重定位信息;</li>
+<li><strong>GOT[1]</strong> 是动态链接器的标识<code>link_map</code>的地址;</li>
+<li><strong>GOT[2]</strong> 包含动态链接器的延迟绑定代码<code>_dl_runtime_resolve</code>的入口点，用于得到真正的函数地址，回写到对应的got表中;</li>
+<li>从 <strong>GOT[3]</strong> 开始就是函数的地址。</li>
 </ul>
-<p><img src="/1"></p>
-<p>plt表(Procedure Linkage Table)是程序链接表，有的说plt表里面存放的是代码（jmp,push,jmp ），还有的说存放的是got表项的地址，还有说<strong>PLT[0]**存放指令，</strong>PLT[1]**之后存放got表项地址。</p>
-<p><img src="/2"></p>
+<p><img src="/2021/12/06/%E5%BB%B6%E8%BF%9F%E7%BB%91%E5%AE%9A%E8%BF%87%E7%A8%8B%E5%88%86%E6%9E%90/1.png"></p>
+<p>plt表(Procedure Linkage Table)是程序链接表，有的说plt表里面存放的是代码（jmp,push,jmp ），还有的说存放的是got表项的地址，还有说 <strong>PLT[0]</strong> 存放指令， <strong>PLT[1]</strong> 之后存放got表项地址。</p>
+<p><img src="/2021/12/06/%E5%BB%B6%E8%BF%9F%E7%BB%91%E5%AE%9A%E8%BF%87%E7%A8%8B%E5%88%86%E6%9E%90/2.png"></p>
 <p>上图是<a target="_blank" rel="noopener" href="https://ropemporium.com/guide.html">ROP Emporium-Appendix A</a>给的一段plt的示例，里面包含3个函数的代码段，但是开头有一个只有(push,jmp)的代码段。似乎plt表中就是存放的代码段。</p>
 <p>我个人觉得，在函数未被调用的时候，plt表中存放的是一段代码，用于延迟绑定，绑定结束之后，plt表中的内容就是对应的got表项的地址。</p>
 <h4 id="为什么需要plt表？"><a href="#为什么需要plt表？" class="headerlink" title="为什么需要plt表？"></a>为什么需要plt表？</h4><p>为什么需要plt表？这个疑问指：为什么需要中间跳一层再找函数地址呢？它是因为需要实现延迟绑定所以出现的吗？</p>
 <p>plt表是为了实现延迟绑定出现的一层间接跳转，延迟绑定提高程序启动的效率，延迟绑定减少进程启动开销的原理则要通过延迟绑定整个机制来解释。</p>
-<h4 id="延迟绑定是什么？"><a href="#延迟绑定是什么？" class="headerlink" title="延迟绑定是什么？"></a>延迟绑定是什么？</h4><p><img src="/3"></p>
+<h4 id="延迟绑定是什么？"><a href="#延迟绑定是什么？" class="headerlink" title="延迟绑定是什么？"></a>延迟绑定是什么？</h4><p><img src="/2021/12/06/%E5%BB%B6%E8%BF%9F%E7%BB%91%E5%AE%9A%E8%BF%87%E7%A8%8B%E5%88%86%E6%9E%90/3.png"></p>
 <p>延迟绑定的调用过程如上图（这张图原出处不知道是哪里，这里是从<a target="_blank" rel="noopener" href="https://www.jianshu.com/p/0ac63c3744dd">GOT表和PLT表</a>扒下来的）。</p>
 <p>函数第一次被调用时，先进入plt表，plt中是三条指令：</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">jmp</span><br><span class="line">push</span><br><span class="line">jmp</span><br></pre></td></tr></table></figure>
@@ -253,17 +253,17 @@
 <li><p>所以从got表跳回到plt表中，继续执行push;jmp指令，跳回后需要进行push的操作，push是的值是对应函数在.got.plt入口的偏移；</p>
 </li>
 <li><p>第二个jmp指令跳回plt的开头，是一个push指令和一个jmp指令</p>
-<p><img src="/4"></p>
+<p><img src="/2021/12/06/%E5%BB%B6%E8%BF%9F%E7%BB%91%E5%AE%9A%E8%BF%87%E7%A8%8B%E5%88%86%E6%9E%90/4.png"></p>
 </li>
-<li><p>plt头部的push指令压入栈的其实是<strong>GOT[1]**的地址即linkmap的地址，jmp到</strong>GOT[2] **即dl_runtime_resolve相关的函数，对动态函数进行地址解析和重定位，并且把函数真实地址回填到got表中</p>
+<li><p>plt头部的push指令压入栈的其实是 <strong>GOT[1]</strong> 的地址即linkmap的地址，jmp到 **GOT[2] ** 即dl_runtime_resolve相关的函数，对动态函数进行地址解析和重定位，并且把函数真实地址回填到got表中</p>
 </li>
 <li><p>执行函数</p>
 </li>
 </ol>
 <p>整个延迟绑定的过程就是这样。</p>
 <p>之后再调用该函数的时候，plt只有一个跳转指令，找到对应的函数地址之后执行函数。动态调试看了一个整个运行过程，有了一个更深入的的理解。下面是两张调试过程中的截图，第一张是首次调用puts函数时的汇编指令，第二张是第二次调用puts函数时的指令，和上面分析一致。</p>
-<p><img src="/5"></p>
-<p><img src="/6"></p>
+<p><img src="/2021/12/06/%E5%BB%B6%E8%BF%9F%E7%BB%91%E5%AE%9A%E8%BF%87%E7%A8%8B%E5%88%86%E6%9E%90/5.png"></p>
+<p><img src="/2021/12/06/%E5%BB%B6%E8%BF%9F%E7%BB%91%E5%AE%9A%E8%BF%87%E7%A8%8B%E5%88%86%E6%9E%90/6.png"></p>
 <p>所以回到之前的问题，为什么需要plt表？这个答案就显而易见了。只有外部函数第一次被调用的时候，通过plt跳转调用got表的<code>_dl_runtime_resolve</code>，并填入正确函数地址。之后再次调用的时候，通过plt-&gt;got表直接跳转到对应的函数地址，不需要再次加载。延迟绑定可以减少进程的启动开销，降低程序的启动时间。</p>
 <h4 id="plt中push指令的作用是什么？"><a href="#plt中push指令的作用是什么？" class="headerlink" title="plt中push指令的作用是什么？"></a>plt中push指令的作用是什么？</h4><p>push指令是用于plt表和.got.plt表对齐的，因为两者的偏移不太一样，所以用push进行对齐。具体可以看<a target="_blank" rel="noopener" href="https://blog.csdn.net/qq_18661257/article/details/54694748">GOT表和PLT表知识详解</a>。</p>
 <h4 id="小结"><a href="#小结" class="headerlink" title="小结"></a>小结</h4><p>不知道是因为没有找到一手资料还是什么原因，感觉很多东西都模棱两可，各种博客的说法大体相似，但是有细微的区别。不过还是把整个脉络多弄清楚了，而且以写博客的形式来总结的话，会进一步了解一些细枝末节的东西。</p>
