@@ -46,11 +46,11 @@
 <meta property="og:image" content="http://yjy123123.github.io/2021/12/13/ROP-Emporium%E8%AF%A6%E8%A7%A3/callme-4.png">
 <meta property="og:image" content="http://yjy123123.github.io/2021/12/13/ROP-Emporium%E8%AF%A6%E8%A7%A3/write4-1.png">
 <meta property="og:image" content="http://yjy123123.github.io/2021/12/13/ROP-Emporium%E8%AF%A6%E8%A7%A3/write4-2.png">
-<meta property="og:image" content="http://yjy123123.github.io/writ4-3.png">
+<meta property="og:image" content="http://yjy123123.github.io/2021/12/13/ROP-Emporium%E8%AF%A6%E8%A7%A3/write4-3.png">
 <meta property="og:image" content="http://yjy123123.github.io/2021/12/13/ROP-Emporium%E8%AF%A6%E8%A7%A3/write4-4.png">
 <meta property="og:image" content="http://yjy123123.github.io/2021/12/13/ROP-Emporium%E8%AF%A6%E8%A7%A3/write4-5.png">
 <meta property="article:published_time" content="2021-12-13T02:42:10.000Z">
-<meta property="article:modified_time" content="2021-12-16T09:31:37.132Z">
+<meta property="article:modified_time" content="2021-12-16T09:33:20.553Z">
 <meta property="article:author" content="yjy123">
 <meta property="article:tag" content="pwn">
 <meta name="twitter:card" content="summary">
@@ -204,7 +204,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">Edited on</span>
-                <time title="Modified: 2021-12-16 17:31:37" itemprop="dateModified" datetime="2021-12-16T17:31:37+08:00">2021-12-16</time>
+                <time title="Modified: 2021-12-16 17:33:20" itemprop="dateModified" datetime="2021-12-16T17:33:20+08:00">2021-12-16</time>
               </span>
 
           
@@ -332,7 +332,7 @@
 <p>然后寻求场外求助。首先edi的值是可以控制的，所以需要找到一个位置，写入<code>flag.txt</code>，在pwndbg中使<code>vmmap</code>可以查看读写权限。当然其他方法也可以，题目描述中给的是rabin2和readelf，但是我不会用。</p>
 <p>然后可以看到write432文件里面的 <strong>0x804a000 - 0x804b000</strong> 是可写的，用ida打开看一看，<strong>0x804a000</strong> 刚好是.got.plt开始的位置，然后还有data段，bss段，然后我选了bss段写入需要的字符串，地址为 <strong>0x804a020</strong></p>
 <p><img src="/2021/12/13/ROP-Emporium%E8%AF%A6%E8%A7%A3/write4-2.png"></p>
-<p><img src="/writ4-3.png"></p>
+<p><img src="/2021/12/13/ROP-Emporium%E8%AF%A6%E8%A7%A3/write4-3.png"></p>
 <p>确定写入位置之后，就直接找一个gadget控制edi就行了，这里还发现这个gadget非常巧妙，它第二个pop的是ebp，刚好串上了，不用其他方法控制ebp了。</p>
 <p><img src="/2021/12/13/ROP-Emporium%E8%AF%A6%E8%A7%A3/write4-4.png"></p>
 <p>两个gadget都找到了，那么只需要分两次写入<code>flag</code>和<code>.txt</code>就完成了目标字符串写入内存，<code>print_file</code>函数的调用和前几题相同。</p>
@@ -345,9 +345,12 @@
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">gadget_1 &#x3D; 0x400690</span><br><span class="line">#控制mov寄存器的取值</span><br><span class="line">gadget_2 &#x3D; 0x400628</span><br><span class="line">#mov指令</span><br><span class="line">gadget_3 &#x3D; 0x400693</span><br><span class="line">#pop rdi传参</span><br><span class="line">addr_bss &#x3D; 0x601038</span><br><span class="line">#bss段起始位置</span><br><span class="line">payload &#x3D; b&#39;A&#39;* 32 + b&#39;B&#39;* 8 + p64(gadget_1) + p64(addr_bss) + b&#39;flag.txt&#39; + p64(gadget_2) + p64(gadget_3) + p64(addr_bss) + p64(print_file) </span><br></pre></td></tr></table></figure>
 
 
-<h3 id="小结"><a href="#小结" class="headerlink" title="小结"></a>小结</h3><p>做到这也算是十窍通了九窍，继续加油吧。指导我的人说我做不出来题是因为不知道ROP到底是什么。但是在写博客的时候，我发现比这过分多了，不是不知道ROP是什么，而是最基本的对汇编指令的理解都不太到位，虽然我去年看过一次汇编，但是依旧无法融会贯通，比如我不知道eip是用来存储即将执行的程序指令的地址，cpu 依照 eip 的存储内容读取指令并执行；不知道ret 其实是因为将栈顶数据弹出至 eip，所以能控制函数执行，以及解释了为什么能一个gadget接一个gadget的执行，因为每次pop完之后都ret，payload中的下一个地址传给rip。这么一看好像确实也是不懂ROP，但是通过写博客，对很多东西有了更深刻的认知，因为写博客对我来说是一个消化吸收、梳理逻辑、弄清楚之前不懂的点的过程，而且我会想尽量保证博客的准确性，这个时候的我是静下心来去看资料，目标相对也比较明确的。可能博客并没有人会看，但是也是记录自己成长过程的方法，同时还能做一个备忘。</p>
+<h3 id="小结"><a href="#小结" class="headerlink" title="小结"></a>小结</h3><p>做到这也算是十窍通了九窍，继续加油吧。提供场外援助的人说我做不出来题是因为不知道ROP到底是什么。但是在写博客的时候，我发现比这过分多了，不是不知道ROP是什么，而是最基本的对汇编指令的理解都不太到位，虽然我去年看过一次汇编，但是依旧无法融会贯通，比如我不知道eip是用来存储即将执行的程序指令的地址，cpu 依照 eip 的存储内容读取指令并执行；不知道ret 其实是因为将栈顶数据弹出至 eip，所以能控制函数执行，以及解释了为什么能一个gadget接一个gadget的执行，因为每次pop完之后都ret，payload中的下一个地址传给rip。这么一看好像确实也是不懂ROP，但是通过写博客，对很多东西有了更深刻的认知，因为写博客对我来说是一个消化吸收、梳理逻辑、弄清楚之前不懂的点的过程，而且我会想尽量保证博客的准确性，这个时候的我是静下心来去看资料，目标相对也比较明确的。可能博客并没有人会看，但是也是记录自己成长过程的方法，同时还能做一个备忘。</p>
 <p>明年见，886！</p>
 <h3 id="参考文献"><a href="#参考文献" class="headerlink" title="参考文献"></a>参考文献</h3><p><a target="_blank" rel="noopener" href="https://aidenpearce369.github.io/binary%20exploitation/2-split/">split两种解法</a></p>
+<p><a target="_blank" rel="noopener" href="https://ctf-wiki.org/pwn/linux/">CTF Wiki</a></p>
+<p><a target="_blank" rel="noopener" href="https://paper.seebug.org/271/">手把手教你栈溢出从入门到放弃（上）</a></p>
+<p><a target="_blank" rel="noopener" href="https://paper.seebug.org/272/#0x30-rop-return-oriented-programming">手把手教你栈溢出从入门到放弃（下）</a></p>
 
     </div>
 
