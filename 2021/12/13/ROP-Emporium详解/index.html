@@ -50,7 +50,7 @@
 <meta property="og:image" content="http://yjy123123.github.io/2021/12/13/ROP-Emporium%E8%AF%A6%E8%A7%A3/write4-4.png">
 <meta property="og:image" content="http://yjy123123.github.io/2021/12/13/ROP-Emporium%E8%AF%A6%E8%A7%A3/write4-5.png">
 <meta property="article:published_time" content="2021-12-13T02:42:10.000Z">
-<meta property="article:modified_time" content="2021-12-16T09:33:20.553Z">
+<meta property="article:modified_time" content="2021-12-16T11:08:14.217Z">
 <meta property="article:author" content="yjy123">
 <meta property="article:tag" content="pwn">
 <meta name="twitter:card" content="summary">
@@ -204,7 +204,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">Edited on</span>
-                <time title="Modified: 2021-12-16 17:33:20" itemprop="dateModified" datetime="2021-12-16T17:33:20+08:00">2021-12-16</time>
+                <time title="Modified: 2021-12-16 19:08:14" itemprop="dateModified" datetime="2021-12-16T19:08:14+08:00">2021-12-16</time>
               </span>
 
           
@@ -244,10 +244,13 @@
 <h3 id="栈溢出相关知识"><a href="#栈溢出相关知识" class="headerlink" title="栈溢出相关知识"></a>栈溢出相关知识</h3><p>我对栈的了解仅存在于一些基本的概念，比如说先进后出，从高地址向低地址增长，esp存放栈顶地址，ebp存放栈底地址。</p>
 <p>在ROP中，需要通过栈溢出覆盖返回地址，那么如何构造payload来覆盖返回地址呢。下面是<a target="_blank" rel="noopener" href="https://ctf-wiki.org/pwn/linux/user-mode/stackoverflow/x86/stackoverflow-basic/">CTF Wiki栈溢出原理</a>中一张栈的结构图。我之所以ret2win无从下手就是因为我连栈的结构我都不太了解。</p>
 <p>这里需要理解两个地方，第一在存放数据的时候，数据从低地址往高地址存放，所以会覆盖ebp和返回地址。第二点，返回地址前面有一块内存是ebp，这里是存放了之前的ebp地址（用于后续恢复上下文），32位是4个字节，64位是8个字节。所以想要覆盖返回地址的时候，除了把当前栈空间覆盖还需要把ebp也覆盖了。</p>
-<p><img src="/2021/12/13/ROP-Emporium%E8%AF%A6%E8%A7%A3/1.png"></p>
+<img src="1.png" width=80% height=50% align=center/>
+
 <p>知道了如何返回地址的覆盖，那如果要调用的函数，参数如何传递的我又不清楚了。下面这张图是函数调用栈的方法。摘自<a target="_blank" rel="noopener" href="https://ctf-wiki.org/pwn/linux/user-mode/stackoverflow/x86/stack-intro/">CTF Wiki栈介绍</a></p>
 <p><img src="/2021/12/13/ROP-Emporium%E8%AF%A6%E8%A7%A3/2.png"></p>
-<h3 id="环境搭建"><a href="#环境搭建" class="headerlink" title="环境搭建"></a>环境搭建</h3><p>ROP Emporium有一个<a target="_blank" rel="noopener" href="https://ropemporium.com/guide.html">Beginners’ guide</a>里面提到一些工具的使用，pwntools和pwndbg是一定要安装的。我在kali下安装环境还弄了挺久的。一个是下载pwndbg疯狂报错相关版本不适配，这里换清华或者其他的镜像之后，update一下，但是换源的教程一定要找一个靠谱的，不然白折腾。第二个就是pwntools，需要python3的环境，但是kali系统自带的是pyhton2.7，所以下载一个virtualenvwrapper，方便python版本管理。</p>
+<h3 id="环境搭建"><a href="#环境搭建" class="headerlink" title="环境搭建"></a>环境搭建</h3><p>ROP Emporium有一个<a target="_blank" rel="noopener" href="https://ropemporium.com/guide.html">Beginners’ guide</a>里面提到一些工具的使用，pwntools和pwndbg是一定要安装的。我在kali下安装环境还弄了挺久的。现在只记得两个问题。</p>
+<p>第一个是下载pwndbg疯狂报错相关版本不适配，这里换清华或者其他的镜像之后，update一下，但是换源的教程一定要找一个靠谱的，不然白折腾。</p>
+<p>第二个就是pwntools，需要python3的环境，但是kali系统自带的是pyhton2.7，所以下载一个virtualenvwrapper，方便python版本管理。</p>
 <h3 id="相关工具使用"><a href="#相关工具使用" class="headerlink" title="相关工具使用"></a>相关工具使用</h3><h4 id="checksec"><a href="#checksec" class="headerlink" title="checksec"></a>checksec</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">checksec filename</span><br></pre></td></tr></table></figure>
 <p>查看几种安全机制是否开启。</p>
 <h4 id="pwntools"><a href="#pwntools" class="headerlink" title="pwntools"></a>pwntools</h4><p>pwntools是一个帮助写EXP的框架，因为这里是为了做题，所以我直接抄的模版，之后主要是改payload。</p>
@@ -255,12 +258,13 @@
 <h4 id="ROPgadget"><a href="#ROPgadget" class="headerlink" title="ROPgadget"></a>ROPgadget</h4><p>用来找需要的gadget的工具，并且可以通过grep添加限制条件，进一步找需要的gadget。</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ROPgadget --binary rop --only “pop|ret” | grep &quot;eax&quot;</span><br></pre></td></tr></table></figure>
 <h4 id="pwndbg"><a href="#pwndbg" class="headerlink" title="pwndbg"></a>pwndbg</h4><p>pwndbg是一个gdb插件，用来动态调试看栈的变化。常用指令包括：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">help  --帮助</span><br><span class="line"></span><br><span class="line">r  --run，执行程序</span><br><span class="line">c  --continue，执行到下一个断点</span><br><span class="line">si --step into，单步步入</span><br><span class="line">so --step out，单步步过</span><br><span class="line">b *0xaddr    --下断点，在某一个地址下断点</span><br><span class="line">b fun_name   --在函数处下断点</span><br><span class="line">disable n  --禁用n号断点</span><br><span class="line">enable n  --启用n号断点</span><br><span class="line">info breakpoint  --查看断点信息</span><br><span class="line">disass fun_name --打印函数汇编指令</span><br></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">help  --帮助</span><br><span class="line">r  --run，执行程序</span><br><span class="line">c  --continue，执行到下一个断点</span><br><span class="line">si --step into，单步步入</span><br><span class="line">so --step out，单步步过</span><br><span class="line">b *0xaddr    --下断点，在某一个地址下断点</span><br><span class="line">b fun_name   --在函数处下断点</span><br><span class="line">disable n  --禁用n号断点</span><br><span class="line">enable n  --启用n号断点</span><br><span class="line">info breakpoint  --查看断点信息</span><br><span class="line">disass fun_name --打印函数汇编指令</span><br><span class="line">stepret  --运行到返回地址</span><br></pre></td></tr></table></figure>
 <h3 id="ROP-Emporium-Writeup"><a href="#ROP-Emporium-Writeup" class="headerlink" title="ROP Emporium Writeup"></a>ROP Emporium Writeup</h3><h4 id="基本解题步骤"><a href="#基本解题步骤" class="headerlink" title="基本解题步骤"></a>基本解题步骤</h4><ol>
 <li>checksec检查程序的安全机制</li>
 <li>ida逆向，主要是看漏洞点，重点关注一些危险函数。</li>
 </ol>
-<p><img src="/2021/12/13/ROP-Emporium%E8%AF%A6%E8%A7%A3/3.png"></p>
+<img src="3.png" width=80% height=50% align=center/>
+
 <ol start="3">
 <li>通过分析，找到需要填充的长度。</li>
 <li>构造payload，这个地方可能还需要找gadget来构建完整的攻击链。</li>
