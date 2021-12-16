@@ -36,7 +36,7 @@
 <meta property="og:image" content="http://yjy123123.github.io/2021/12/06/%E5%BB%B6%E8%BF%9F%E7%BB%91%E5%AE%9A%E8%BF%87%E7%A8%8B%E5%88%86%E6%9E%90/5.png">
 <meta property="og:image" content="http://yjy123123.github.io/2021/12/06/%E5%BB%B6%E8%BF%9F%E7%BB%91%E5%AE%9A%E8%BF%87%E7%A8%8B%E5%88%86%E6%9E%90/6.png">
 <meta property="article:published_time" content="2021-12-06T12:40:40.000Z">
-<meta property="article:modified_time" content="2021-12-08T02:53:41.624Z">
+<meta property="article:modified_time" content="2021-12-16T03:00:10.877Z">
 <meta property="article:author" content="yjy123">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:image" content="http://yjy123123.github.io/2021/12/06/%E5%BB%B6%E8%BF%9F%E7%BB%91%E5%AE%9A%E8%BF%87%E7%A8%8B%E5%88%86%E6%9E%90/1.png">
@@ -189,7 +189,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">Edited on</span>
-                <time title="Modified: 2021-12-08 10:53:41" itemprop="dateModified" datetime="2021-12-08T10:53:41+08:00">2021-12-08</time>
+                <time title="Modified: 2021-12-16 11:00:10" itemprop="dateModified" datetime="2021-12-16T11:00:10+08:00">2021-12-16</time>
               </span>
 
           
@@ -267,6 +267,9 @@
 <p>所以回到之前的问题，为什么需要plt表？这个答案就显而易见了。只有外部函数第一次被调用的时候，通过plt跳转调用got表的<code>_dl_runtime_resolve</code>，并填入正确函数地址。之后再次调用的时候，通过plt-&gt;got表直接跳转到对应的函数地址，不需要再次加载。延迟绑定可以减少进程的启动开销，降低程序的启动时间。</p>
 <h4 id="plt中push指令的作用是什么？"><a href="#plt中push指令的作用是什么？" class="headerlink" title="plt中push指令的作用是什么？"></a>plt中push指令的作用是什么？</h4><p>push指令是用于plt表和.got.plt表对齐的，因为两者的偏移不太一样，所以用push进行对齐。具体可以看<a target="_blank" rel="noopener" href="https://blog.csdn.net/qq_18661257/article/details/54694748">GOT表和PLT表知识详解</a>。</p>
 <h4 id="小结"><a href="#小结" class="headerlink" title="小结"></a>小结</h4><p>不知道是因为没有找到一手资料还是什么原因，感觉很多东西都模棱两可，各种博客的说法大体相似，但是有细微的区别。不过还是把整个脉络多弄清楚了，而且以写博客的形式来总结的话，会进一步了解一些细枝末节的东西。</p>
+<h4 id="补充"><a href="#补充" class="headerlink" title="补充"></a>补充</h4><p>看到一篇讲劫持GOT表的博客<a target="_blank" rel="noopener" href="https://paper.seebug.org/272/#0x40-hijack-got">手把手教你栈溢出从入门到放弃（下）</a>。</p>
+<p>GOT 全称是全局偏移量表（<strong>G</strong>lobal <strong>O</strong>ffset <strong>T</strong>able），用来存储外部函数在内存的确切地址。GOT 存储在数据段（Data Segment）内，可以在程序运行中被修改。PLT 全称是程序链接表（<strong>P</strong>rocedure <strong>L</strong>inkage <strong>T</strong>able），用来存储外部函数的入口点（entry），换言之程序总会到 PLT 这里寻找外部函数的地址。PLT 存储在代码段（Code Segment）内，在运行之前就已经确定并且不会被修改，所以 PLT 并不会知道程序运行时动态链接库被加载的确切位置。PLT 表内存储的入口点就是GOT表对应的条目地址。</p>
+<p>所以想利用延迟绑定进行攻击的时候，需要找gadget修改GOT表。</p>
 <h4 id="参考文献"><a href="#参考文献" class="headerlink" title="参考文献"></a>参考文献</h4><p><a target="_blank" rel="noopener" href="https://ropemporium.com/guide.html">ROP Emporium-Appendix A</a>  短小精悍的对延迟绑定的解释，感觉相对准确，如果能看这个看懂，其他的不用看了</p>
 <p><a target="_blank" rel="noopener" href="https://evilpan.com/2018/04/09/about-got-plt/">深入了解GOT,PLT和动态链接</a> 非常完整详细的讲解博客</p>
 <p><a target="_blank" rel="noopener" href="https://blog.csdn.net/ATFWUS/article/details/104563414#:~:text=PLT%20%E8%A1%A8%E4%B8%AD%E5%AD%98%E5%82%A8%E7%9A%84%E6%98%AF%20GOT%20%E8%A1%A8%E4%B8%AD%E7%9A%84%E5%9C%B0%E5%9D%80%E3%80%82%20PLT%20%E6%98%AF%E4%B8%80%E4%B8%AA%E5%87%BD%E6%95%B0%EF%BC%8C%E8%BF%99%E4%B8%AA%E5%87%BD%E6%95%B0%E7%9A%84%E4%BD%9C%E7%94%A8%E6%98%AF%E9%80%9A%E8%BF%87,GOT%20%E5%92%8C%20GOT%20%E6%9D%A5%E6%AD%A3%E7%A1%AE%E7%BB%91%E5%AE%9A%E4%B8%80%E4%B8%AA%E5%87%BD%E6%95%B0%E7%9A%84%E6%AD%A3%E5%BC%8F%E5%9C%B0%E5%9D%80%E5%88%B0GOT%E8%A1%A8%E4%B8%AD%E6%9D%A5%E3%80%82%20GOT%20%E5%8C%85%E5%90%AB.dynamic%E6%AE%B5%E7%9A%84%E5%9C%B0%E5%9D%80%EF%BC%8C.dynamic%E6%AE%B5%E5%8C%85%E5%90%AB%E4%BA%86%E5%8A%A8%E6%80%81%E9%93%BE%E6%8E%A5%E5%99%A8%E7%94%A8%E6%9D%A5%E7%BB%91%E5%AE%9A%E8%BF%87%E7%A8%8B%E5%9C%B0%E5%9D%80%E7%9A%84%E4%BF%A1%E6%81%AF%EF%BC%8C%E6%AF%94%E5%A6%82%E7%AC%A6%E5%8F%B7%E7%9A%84%E4%BD%8D%E7%BD%AE%E5%92%8C%E9%87%8D%E5%AE%9A%E4%BD%8D%E4%BF%A1%E6%81%AF%E3%80%82">PLT表和GOT表 </a> 解释两个表是什么，每个表项是什么</p>
@@ -292,7 +295,10 @@
     <a href="/2021/11/02/%E6%B5%85%E8%B0%88%E9%82%AE%E4%BB%B6%E4%BC%AA%E9%80%A0%E6%8A%80%E6%9C%AF/" rel="prev" title="浅谈邮件伪造技术">
       <i class="fa fa-chevron-left"></i> 浅谈邮件伪造技术
     </a></div>
-      <div class="post-nav-item"></div>
+      <div class="post-nav-item">
+    <a href="/2021/12/13/ROP-Emporium%E8%AF%A6%E8%A7%A3/" rel="next" title="ROP Emporium详解">
+      ROP Emporium详解 <i class="fa fa-chevron-right"></i>
+    </a></div>
     </div>
       </footer>
     
@@ -352,7 +358,7 @@
 
       <!--noindex-->
       <div class="post-toc-wrap sidebar-panel">
-          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-4"><a class="nav-link" href="#plt%E8%A1%A8%E5%92%8Cgot%E8%A1%A8%E6%98%AF%E4%BB%80%E4%B9%88%EF%BC%9F"><span class="nav-number">1.</span> <span class="nav-text">plt表和got表是什么？</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E4%B8%BA%E4%BB%80%E4%B9%88%E9%9C%80%E8%A6%81plt%E8%A1%A8%EF%BC%9F"><span class="nav-number">2.</span> <span class="nav-text">为什么需要plt表？</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%BB%B6%E8%BF%9F%E7%BB%91%E5%AE%9A%E6%98%AF%E4%BB%80%E4%B9%88%EF%BC%9F"><span class="nav-number">3.</span> <span class="nav-text">延迟绑定是什么？</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#plt%E4%B8%ADpush%E6%8C%87%E4%BB%A4%E7%9A%84%E4%BD%9C%E7%94%A8%E6%98%AF%E4%BB%80%E4%B9%88%EF%BC%9F"><span class="nav-number">4.</span> <span class="nav-text">plt中push指令的作用是什么？</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%B0%8F%E7%BB%93"><span class="nav-number">5.</span> <span class="nav-text">小结</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%8F%82%E8%80%83%E6%96%87%E7%8C%AE"><span class="nav-number">6.</span> <span class="nav-text">参考文献</span></a></li></ol></div>
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-4"><a class="nav-link" href="#plt%E8%A1%A8%E5%92%8Cgot%E8%A1%A8%E6%98%AF%E4%BB%80%E4%B9%88%EF%BC%9F"><span class="nav-number">1.</span> <span class="nav-text">plt表和got表是什么？</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E4%B8%BA%E4%BB%80%E4%B9%88%E9%9C%80%E8%A6%81plt%E8%A1%A8%EF%BC%9F"><span class="nav-number">2.</span> <span class="nav-text">为什么需要plt表？</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%BB%B6%E8%BF%9F%E7%BB%91%E5%AE%9A%E6%98%AF%E4%BB%80%E4%B9%88%EF%BC%9F"><span class="nav-number">3.</span> <span class="nav-text">延迟绑定是什么？</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#plt%E4%B8%ADpush%E6%8C%87%E4%BB%A4%E7%9A%84%E4%BD%9C%E7%94%A8%E6%98%AF%E4%BB%80%E4%B9%88%EF%BC%9F"><span class="nav-number">4.</span> <span class="nav-text">plt中push指令的作用是什么？</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%B0%8F%E7%BB%93"><span class="nav-number">5.</span> <span class="nav-text">小结</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E8%A1%A5%E5%85%85"><span class="nav-number">6.</span> <span class="nav-text">补充</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%8F%82%E8%80%83%E6%96%87%E7%8C%AE"><span class="nav-number">7.</span> <span class="nav-text">参考文献</span></a></li></ol></div>
       </div>
       <!--/noindex-->
 
@@ -366,12 +372,12 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">21</span>
+          <span class="site-state-item-count">22</span>
           <span class="site-state-item-name">posts</span>
         </a>
       </div>
       <div class="site-state-item site-state-tags">
-        <span class="site-state-item-count">15</span>
+        <span class="site-state-item-count">16</span>
         <span class="site-state-item-name">tags</span>
       </div>
   </nav>

