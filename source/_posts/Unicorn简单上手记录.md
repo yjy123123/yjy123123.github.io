@@ -12,13 +12,13 @@ Unicorn是一个CPU模拟器，主要作用就是跨平台模拟执行，Unicorn
 
 目前基本上Unicorn的引导教程都是基于[Unicorn Engine tutorial](http://eternal.red/2018/unicorn-engine-tutorial/)这篇文章。
 
-###下载
+### 下载
 
 [编译安装](https://www.unicorn-engine.org/docs/)
 
 基本上类似的开源软件官方文档有非常详细的安装编译教程，选一种适合自己环境的方法就可以了。如果使用Python的模块的话，直接通过pip3下载，不过貌似安装麒麟框架的时候已经下好了，pip应该是最便捷的方法了。
 
-###Task1
+### Task1
 
 1.用的Pycharm，一开始并没有办法识别unicorn的库，我还以为安装失败了，其实因为默认的依赖库里面没有，更换成本地的依赖库就行了，不知道为什么明明重新设置了默认依赖，每次新项目都要手动更改一下
 
@@ -47,7 +47,6 @@ UnicodeDecodeError: 'utf-8' codec can't decode byte 0x90 in position 24: invalid
 
 
 
-
-###小结
+### 小结
 
 Unicorn需要手动的分配内存，但是比较灵活，可以从任意地址开始执行代码，不依赖上下文。

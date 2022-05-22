@@ -465,11 +465,11 @@ exturl: false
 
 # Google Webmaster tools verification.
 # See: https://www.google.com/webmasters
-google_site_verification:
+google_site_verification: true
 
 # Bing Webmaster tools verification.
 # See: https://www.bing.com/webmaster
-bing_site_verification:
+bing_site_verification: true
 
 # Yandex Webmaster tools verification.
 # See: https://webmaster.yandex.ru

@@ -27,10 +27,10 @@
   <meta http-equiv="Cache-Control" content="no-siteapp">
 {%- endif %}
 {%- if theme.google_site_verification %}
-  <meta name="google-site-verification" content="{{ theme.google_site_verification }}">
+  <meta name="google-site-verification" content="EG4Bjpdp2Ab8fVRRgskXpY8SWbusBOQsiHA-qLNx6kw" />
 {%- endif %}
 {%- if theme.bing_site_verification %}
-  <meta name="msvalidate.01" content="{{ theme.bing_site_verification }}">
+  <meta name="msvalidate.01" content="B8A0A64EAB0FC5E0F51FE913998A0618" />
 {%- endif %}
 {%- if theme.yandex_site_verification %}
   <meta name="yandex-verification" content="{{ theme.yandex_site_verification }}">

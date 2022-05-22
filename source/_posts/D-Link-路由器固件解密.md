@@ -13,11 +13,13 @@ description: 跟着一篇博客尝试解密了一下D-Link的DIR-878的路由器
 
 固件下载🔗：https://tsd.dlink.com.tw
 
-2. 这次参考的博客是[D-Link DIR-882 路由器加密固件的解密](https://my.oschina.net/u/4330227/blog/3200233)，这个也是翻译的国外的一个博客。
+2. 这次参考的博客是[MINDSHARE: DEALING WITH ENCRYPTED ROUTER FIRMWARE](https://www.zerodayinitiative.com/blog/2020/2/6/mindshare-dealing-with-encrypted-router-firmware)
 
    可以解密的固件包括DIR-882、DIR-878和DIR-867的固件。基本原理就是找到一个包含解密功能的未加密固件，用这个解密的模块去解密之后的固件。
 
    感觉可能这个方法通用性没那么好，但是还是有点想动手体验一下，因为操作起来还是比较简单的。
+   
+3. 面试的时候（IoT方向）真的很多公司会问对加密固件怎么分析。
 
 
 
