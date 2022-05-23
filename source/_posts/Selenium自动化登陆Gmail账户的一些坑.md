@@ -21,6 +21,32 @@ description: 宇宙尽头是爬虫...
 
 元素定位没问题，明明元素也找到了，就是偏偏怎么也不能点。怎么调试都搞不定，因为一开始用的Safari的Driver，感觉Chrome还是好一点，虽然要求Driver版本和浏览器一致，最近Gmail也出现元素不能点击的问题了，提示错误是元素不可交互，然后动态调试的时候在console中执行button.click()没有一点问题，代码单步就偏偏出错，目前这个debug给更大的问题中断了。
 
+**更新**
+
+关于click失效的问题，我处理的是一个类似下拉菜单的东西，先要点击按钮，再点击具体操作，那么之前是：
+
+```
+menu = self.driver.find_element(By.XPATH, xpath)
+menu.click()
+time.sleep(3)
+function = self.driver.find_element(By.XPATH, xpath)
+function.cilck()
+```
+
+这里很确定我已经定位到元素，但是会出现`element not interactable`的报错，不能点击，但是在console里面，function.cilck()又可以点击成功。
+
+先把鼠标移到元素附近，再进行点击：
+
+```
+menu = self.driver.find_element(By.XPATH, xpath)
+menu.click()
+function = self.driver.find_element(By.XPATH, xpath)
+ActionChains(self.driver).move_to_element(function).perform()
+function.click()
+```
+
+可以正常执行。
+
 ##### 2.邮箱使用iframe
 
 QQ邮箱不同的区域使用不同的iframe，比如说边上的工具栏和收件箱页面，这就需要在爬取过程中不断的切换iframe，牢记两个功能:
@@ -57,7 +83,7 @@ $x(xpath)
 
 参考链接：[**https://www.wangxiaofeng.site/python-selenium-google.html**](https://www.wangxiaofeng.site/python-selenium-google.html)
 
-（3）添加cookie，这是我想到的第一个办法，也是准备尝试的，发现网上相关的帖子也比较多，Chrome可以直接看cookie还是比较方便的，这里需要注意的是要找的cookie是“accounts.google.com”域名之下的，并不是你要访问的。
+（3）添加cookie，这是我想到的第一个办法，也是准备尝试的，发现网上相关的帖子也比较多，Chrome可以直接看cookie还是比较方便的，这里需要注意的是要找的cookie是“accounts.google.com”域名之下的，并不是你要访问的。之后就是选择要登录的用户，输入密码。
 
 参考链接：https://stackoverflow.com/questions/53953343/using-selenium-to-login-to-gmail-save-cookies-and-then-use-requests
 
