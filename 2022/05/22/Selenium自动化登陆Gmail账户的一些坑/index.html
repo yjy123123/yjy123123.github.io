@@ -30,7 +30,7 @@
 <meta property="og:description" content="宇宙尽头是爬虫...">
 <meta property="og:locale" content="en_US">
 <meta property="article:published_time" content="2022-05-22T12:29:45.000Z">
-<meta property="article:modified_time" content="2022-05-22T13:09:03.472Z">
+<meta property="article:modified_time" content="2022-05-23T02:56:47.512Z">
 <meta property="article:author" content="yjy123">
 <meta property="article:tag" content="爬虫">
 <meta name="twitter:card" content="summary">
@@ -175,10 +175,16 @@
                 <i class="far fa-calendar"></i>
               </span>
               <span class="post-meta-item-text">Posted on</span>
-              
 
-              <time title="Created: 2022-05-22 20:29:45 / Modified: 21:09:03" itemprop="dateCreated datePublished" datetime="2022-05-22T20:29:45+08:00">2022-05-22</time>
+              <time title="Created: 2022-05-22 20:29:45" itemprop="dateCreated datePublished" datetime="2022-05-22T20:29:45+08:00">2022-05-22</time>
             </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2022-05-23 10:56:47" itemprop="dateModified" datetime="2022-05-23T10:56:47+08:00">2022-05-23</time>
+              </span>
 
           
             <span id="/2022/05/22/Selenium%E8%87%AA%E5%8A%A8%E5%8C%96%E7%99%BB%E9%99%86Gmail%E8%B4%A6%E6%88%B7%E7%9A%84%E4%B8%80%E4%BA%9B%E5%9D%91/" class="post-meta-item leancloud_visitors" data-flag-title="Selenium自动化登陆Gmail账户的一些坑" title="Views">
@@ -220,6 +226,13 @@
 <p>其实很简单，如果是简单的网站的话，可能写代码+调试完也就2h，顺利的话一天能写三个，但是Gmail，花了我1.5天时间，还是有点问题，然后周日晚上跑过来加班以抚慰内心的焦虑。</p>
 <p>首先讲一下之前出现的一些问题：</p>
 <h5 id="1-selenium-click失效-1"><a href="#1-selenium-click失效-1" class="headerlink" title="1.selenium click失效-1"></a>1.selenium click失效-1</h5><p>元素定位没问题，明明元素也找到了，就是偏偏怎么也不能点。怎么调试都搞不定，因为一开始用的Safari的Driver，感觉Chrome还是好一点，虽然要求Driver版本和浏览器一致，最近Gmail也出现元素不能点击的问题了，提示错误是元素不可交互，然后动态调试的时候在console中执行button.click()没有一点问题，代码单步就偏偏出错，目前这个debug给更大的问题中断了。</p>
+<p><strong>更新</strong></p>
+<p>关于click失效的问题，我处理的是一个类似下拉菜单的东西，先要点击按钮，再点击具体操作，那么之前是：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">menu &#x3D; self.driver.find_element(By.XPATH, xpath)</span><br><span class="line">menu.click()</span><br><span class="line">time.sleep(3)</span><br><span class="line">function &#x3D; self.driver.find_element(By.XPATH, xpath)</span><br><span class="line">function.cilck()</span><br></pre></td></tr></table></figure>
+<p>这里很确定我已经定位到元素，但是会出现<code>element not interactable</code>的报错，不能点击，但是在console里面，function.cilck()又可以点击成功。</p>
+<p>先把鼠标移到元素附近，再进行点击：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">menu &#x3D; self.driver.find_element(By.XPATH, xpath)</span><br><span class="line">menu.click()</span><br><span class="line">function &#x3D; self.driver.find_element(By.XPATH, xpath)</span><br><span class="line">ActionChains(self.driver).move_to_element(function).perform()</span><br><span class="line">function.click()</span><br></pre></td></tr></table></figure>
+<p>可以正常执行。</p>
 <h5 id="2-邮箱使用iframe"><a href="#2-邮箱使用iframe" class="headerlink" title="2.邮箱使用iframe"></a>2.邮箱使用iframe</h5><p>QQ邮箱不同的区域使用不同的iframe，比如说边上的工具栏和收件箱页面，这就需要在爬取过程中不断的切换iframe，牢记两个功能:</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">EC.frame_to_be_available_and_switch_to_it()</span><br><span class="line">driver.back()</span><br></pre></td></tr></table></figure>
 <p>在不同iframe中自由切换。</p>
@@ -231,7 +244,7 @@
 <p>（1）自动化验证过程，这个应该也有很多人做过，感觉应该有很多可以直接用的轮子；</p>
 <p>（2）针对chrome的话，有一种是通过stack overflow来中转访问别的网站，这样子不需要验证，</p>
 <p>参考链接：<a target="_blank" rel="noopener" href="https://www.wangxiaofeng.site/python-selenium-google.html"><strong>https://www.wangxiaofeng.site/python-selenium-google.html</strong></a></p>
-<p>（3）添加cookie，这是我想到的第一个办法，也是准备尝试的，发现网上相关的帖子也比较多，Chrome可以直接看cookie还是比较方便的，这里需要注意的是要找的cookie是“accounts.google.com”域名之下的，并不是你要访问的。</p>
+<p>（3）添加cookie，这是我想到的第一个办法，也是准备尝试的，发现网上相关的帖子也比较多，Chrome可以直接看cookie还是比较方便的，这里需要注意的是要找的cookie是“accounts.google.com”域名之下的，并不是你要访问的。之后就是选择要登录的用户，输入密码。</p>
 <p>参考链接：<a target="_blank" rel="noopener" href="https://stackoverflow.com/questions/53953343/using-selenium-to-login-to-gmail-save-cookies-and-then-use-requests">https://stackoverflow.com/questions/53953343/using-selenium-to-login-to-gmail-save-cookies-and-then-use-requests</a></p>
 <p>（4）将账户安全级别降低；</p>
 <p>有看到一个这样的解决方法，不知道靠不靠谱。</p>
