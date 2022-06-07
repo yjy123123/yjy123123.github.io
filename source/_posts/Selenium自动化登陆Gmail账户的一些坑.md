@@ -83,13 +83,17 @@ $x(xpath)
 
 参考链接：[**https://www.wangxiaofeng.site/python-selenium-google.html**](https://www.wangxiaofeng.site/python-selenium-google.html)
 
-（3）添加cookie，这是我想到的第一个办法，也是准备尝试的，发现网上相关的帖子也比较多，Chrome可以直接看cookie还是比较方便的，这里需要注意的是要找的cookie是“accounts.google.com”域名之下的，并不是你要访问的。之后就是选择要登录的用户，输入密码。
+（3）添加cookie，这是我想到的第一个办法，也是准备尝试的，因为感觉是可实现并且也会适用于其他邮箱的；
+
+发现网上相关的帖子也比较多，Chrome可以直接看cookie还是比较方便的，这里需要注意的是要找的cookie是“accounts.google.com”域名之下的，并不是你要访问的。之后就是选择要登录的用户，输入密码。
 
 参考链接：https://stackoverflow.com/questions/53953343/using-selenium-to-login-to-gmail-save-cookies-and-then-use-requests
 
 （4）将账户安全级别降低；
 
 有看到一个这样的解决方法，不知道靠不靠谱。
+
+https://myaccount.google.com/lesssecureapps 
 
 
 
